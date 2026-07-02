@@ -36,6 +36,17 @@
   .sec{color:var(--muted);font-size:.8rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase}
   h2{font-size:1.12rem;margin-top:2px;font-weight:800}
   .step-head{display:flex;justify-content:space-between;align-items:center;gap:12px}
+  .banner{position:relative;height:158px;border-radius:14px;overflow:hidden;
+          background-size:cover;background-position:center 30%;background-color:var(--surface2);margin-bottom:12px}
+  .banner::after{content:'';position:absolute;inset:0;
+          background:linear-gradient(180deg,rgba(10,14,22,.12) 30%,rgba(10,14,22,.88))}
+  .banner>*{position:absolute;z-index:1}
+  .btag{top:12px;left:14px;font-size:.75rem;letter-spacing:.14em;color:#cfe9ff;font-weight:700}
+  .btitle{bottom:30px;left:14px;right:90px;font-weight:800;font-size:1.12rem;line-height:1.3;
+          text-shadow:0 2px 10px rgba(0,0,0,.7)}
+  .bprog{bottom:10px;left:14px;color:var(--teal);font-weight:700;font-size:.9rem;text-shadow:0 1px 6px rgba(0,0,0,.7)}
+  .banner .ringwrap{top:12px;right:12px}
+  .exic{width:44px;height:44px;border-radius:12px;flex-shrink:0;margin-top:2px;border:1px solid var(--line)}
   .step-sum{display:none;align-items:center;gap:10px;cursor:pointer}
   .step-sum .ok{width:30px;height:30px;border-radius:50%;background:var(--teal);color:#04121c;
                 display:flex;align-items:center;justify-content:center;font-weight:900;flex-shrink:0}
@@ -49,7 +60,7 @@
   .ex{display:flex;gap:14px;align-items:flex-start;padding:14px 0;border-bottom:1px solid var(--line)}
   .ex:last-child{border-bottom:none}
   .ex input[type=checkbox]{appearance:none;-webkit-appearance:none;width:27px;height:27px;margin-top:4px;
-      border:2px solid var(--muted);border-radius:50%;flex-shrink:0;position:relative;background:transparent}
+      border:2px solid var(--muted);border-radius:50%;flex-shrink:0;position:relative;background:transparent;margin-left:auto}
   .ex input[type=checkbox]:checked{background:var(--teal);border-color:var(--teal)}
   .ex input[type=checkbox]:checked::after{content:'✓';color:#04121c;position:absolute;inset:0;
       display:flex;align-items:center;justify-content:center;font-weight:900;font-size:16px}
@@ -155,11 +166,12 @@
 
   <!-- Step 2 今日訓練 -->
   <div class="card">
-    <div class="step-head">
-      <div><div class="sec">Step 2</div><h2 id="wName"></h2>
-        <div class="done-label" id="progTxt"></div></div>
+    <div class="banner" id="banner">
+      <div class="btag">STEP 2｜今日訓練</div>
+      <div class="btitle" id="wName"></div>
+      <div class="bprog" id="progTxt"></div>
       <div class="ringwrap">
-        <svg width="64" height="64"><circle cx="32" cy="32" r="27" fill="none" stroke="var(--line)" stroke-width="7"/>
+        <svg width="64" height="64"><circle cx="32" cy="32" r="27" fill="none" stroke="rgba(255,255,255,.25)" stroke-width="7"/>
         <circle id="ringFg" cx="32" cy="32" r="27" fill="none" stroke="var(--teal)" stroke-width="7"
                 stroke-linecap="round" stroke-dasharray="169.6" stroke-dashoffset="169.6"/></svg>
         <div class="pct" id="ringPct">0%</div>
@@ -340,6 +352,13 @@ function streak(){
   return n;
 }
 const DOWCH=['日','一','二','三','四','五','六'];
+/* 視覺資產對映（img/ 由 draw skill 生成） */
+const BANMAP={A:'strength',B:'strength',M:'core',L1:'lower',L2:'lower',U1:'upper',U2:'upper',
+              AB1:'core',AB2:'core',AR1:'upper',AR2:'upper',WALK:'cardio',LISS:'cardio',REST:'recovery'};
+const ICMAP={sq:'squat',ss:'squat',rdl:'hinge',srdl:'hinge',gb:'bridge',cp:'press',ip:'press',
+             rw:'row',lp:'pulldown',mc:'core',db:'core',cc:'core',bd:'plank',spl:'plank',
+             pp:'antirotation',er:'shoulder',fp:'shoulder',lr:'shoulder',lc:'legcurl',
+             td:'arms',bc:'arms',op:'overhead',walk:'walk',liss:'walk',yoga:'rest'};
 const TAG={A:'肌力',B:'肌力',M:'保養',L1:'下肢',U1:'上肢',L2:'下肢',U2:'上肢',WALK:'快走',LISS:'有氧',REST:'休'};
 function renderStrip(){
   const mon=new Date(today);mon.setDate(mon.getDate()-((dow+6)%7));
@@ -371,6 +390,7 @@ function renderToday(){
   else badges.innerHTML='<span class="badge">第 '+wk+' 週｜'+PHASE(wk)+'</span>'+(isDeload(wk)?'<span class="badge deload">🔋 減量週</span>':'');
   renderStrip(); renderStep1();
   const keys=dayKeys(wk,dow);
+  document.getElementById('banner').style.backgroundImage="url('img/banner-"+(BANMAP[keys[0]]||'strength')+".jpg')";
   document.getElementById('wName').textContent=keys.map(k=>W[k].name).join(' ');
   document.getElementById('wNote').textContent=isDeload(wk)&&keys[0]!=='REST'?'減量週：全動作組數減半、阻力 −20%、RPE ≤6。照做，這是計畫的一部分。':'暖身：最偉大拉伸×3 → 開始。收操：瑜珈舒緩 10 分。';
   const st=(logs[TD]&&logs[TD].done)||{};
@@ -380,7 +400,7 @@ function renderToday(){
   items.forEach(id=>{
     const e=EX[id],d=!!st[id];
     const div=document.createElement('div');div.className='ex'+(d?' done':'');
-    div.innerHTML='<input type="checkbox" '+(d?'checked':'')+' onchange="tick(\''+id+'\',this.checked)"><div><div class="n">'+e.n+'</div><div class="m">'+e.m+'</div><div class="c">💡 '+e.c+'</div>'+guideHTML(id)+'</div>';
+    div.innerHTML='<img class="exic" src="img/icon-'+(ICMAP[id]||'squat')+'.png" alt="" loading="lazy"><div style="min-width:0"><div class="n">'+e.n+'</div><div class="m">'+e.m+'</div><div class="c">💡 '+e.c+'</div>'+guideHTML(id)+'</div><input type="checkbox" '+(d?'checked':'')+' onchange="tick(\''+id+'\',this.checked)">';
     list.appendChild(div);
   });
   const done=items.filter(i=>st[i]).length, pct=items.length?Math.round(100*done/items.length):0;

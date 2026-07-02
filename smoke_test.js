@@ -64,6 +64,8 @@ gOpen.add('mc');
 assert(guideHTML('mc').includes('youtube.com')&&guideHTML('mc').includes('步驟'), 'guideHTML 展開含影片與步驟');
 assert(guideHTML('walk')==='', '有氧不出導引卡');
 assert(cfg.path==='健身日誌/健身紀錄log.md', '日誌預設路徑=資料夾版: '+cfg.path);
+Object.keys(EX).forEach(k=>assert(ICMAP[k], '動作缺 icon 對映: '+k));
+Object.keys(W).forEach(k=>assert(BANMAP[k], '課表缺 banner 對映: '+k));
 document.getElementById('inWk').value='13'; renderPlan();
 renderToday(); renderTrend();
 console.log('ALL SMOKE TESTS PASSED');
