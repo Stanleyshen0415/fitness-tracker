@@ -105,6 +105,10 @@
   nav button.on{color:var(--blue)}
   nav button .ico{display:block;font-size:1.4rem}
   .page{display:none}.page.on{display:block}
+  @media (min-width:520px){
+    body{max-width:430px;margin:0 auto;border-left:1px solid var(--line);border-right:1px solid var(--line);min-height:100vh}
+    nav{left:50%;transform:translateX(-50%);width:100%;max-width:430px}
+  }
 </style>
 </head>
 <body>
