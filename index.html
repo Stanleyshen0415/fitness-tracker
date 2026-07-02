@@ -8,86 +8,104 @@
 <style>
   :root{
     --page:#0d0d0d; --surface:#1a1a19; --ink:#ffffff; --ink2:#c3c2b7; --muted:#898781;
-    --grid:#2c2c2a; --axis:#383835; --s1:#3987e5; --s1l:#6da7ec; --good:#0ca30c;
-    --ring:rgba(255,255,255,0.10);
+    --grid:#2c2c2a; --axis:#383835; --s1:#3987e5; --s1l:#6da7ec; --good:#35d07f;
+    --acc:#ff8a3d; --acc2:#ffb347; --ring:rgba(255,255,255,0.10);
   }
   *{box-sizing:border-box;margin:0;padding:0}
   body{background:var(--page);color:var(--ink);font-family:system-ui,-apple-system,"Segoe UI",sans-serif;
-       font-size:16px;line-height:1.55;padding-bottom:80px}
-  header{padding:20px 16px 8px}
-  header h1{font-size:1.15rem;font-weight:700}
-  header .date{color:var(--ink2);font-size:.9rem}
-  .card{background:var(--surface);border:1px solid var(--ring);border-radius:14px;margin:12px 16px;padding:16px}
-  .badge{display:inline-block;font-size:.75rem;padding:2px 10px;border-radius:99px;border:1px solid var(--ring);color:var(--ink2);margin-right:6px}
-  .badge.deload{color:#fab219;border-color:#fab21955}
-  .quote{color:var(--ink2);font-size:.92rem;border-left:3px solid var(--s1);padding-left:10px;margin-top:10px}
-  .ex{display:flex;gap:12px;align-items:flex-start;padding:12px 0;border-bottom:1px solid var(--grid)}
+       font-size:18px;line-height:1.6;padding-bottom:92px}
+  .hero{margin:14px 16px 4px;padding:20px 18px;border-radius:18px;
+        background:linear-gradient(135deg,#ff8a3d 0%,#ff5f6d 55%,#c94fd1 120%);
+        box-shadow:0 8px 28px rgba(255,110,80,.25)}
+  .hero .hi{font-size:1.45rem;font-weight:800;letter-spacing:.5px}
+  .hero .date{font-size:.95rem;opacity:.92;margin-top:2px}
+  .hero .badges{margin-top:10px}
+  .hero .badge{background:rgba(255,255,255,.18);border:none;color:#fff}
+  .hero .streak{margin-top:10px;font-weight:700;font-size:1rem}
+  .card{background:var(--surface);border:1px solid var(--ring);border-radius:18px;margin:14px 16px;padding:18px}
+  .badge{display:inline-block;font-size:.85rem;padding:3px 12px;border-radius:99px;border:1px solid var(--ring);color:var(--ink2);margin-right:6px;font-weight:600}
+  .badge.deload{color:#ffd166;border-color:#ffd16655}
+  .quote{color:#ffd9b8;font-size:1.02rem;font-weight:600;border-left:4px solid var(--acc);padding-left:12px;margin-top:14px;line-height:1.5}
+  .ex{display:flex;gap:14px;align-items:flex-start;padding:14px 0;border-bottom:1px solid var(--grid)}
   .ex:last-child{border-bottom:none}
-  .ex input[type=checkbox]{width:24px;height:24px;margin-top:3px;accent-color:var(--s1);flex-shrink:0}
-  .ex .n{font-weight:600}
-  .ex .m{color:var(--ink2);font-size:.85rem}
-  .ex .c{color:var(--muted);font-size:.82rem;margin-top:2px}
+  .ex input[type=checkbox]{width:28px;height:28px;margin-top:4px;accent-color:var(--good);flex-shrink:0}
+  .ex .n{font-weight:700;font-size:1.08rem}
+  .ex .m{color:var(--ink2);font-size:.95rem;margin-top:2px}
+  .ex .c{color:var(--muted);font-size:.9rem;margin-top:3px}
   .ex.done .n{color:var(--muted);text-decoration:line-through}
-  .prog{height:6px;background:var(--grid);border-radius:3px;overflow:hidden;margin-top:12px}
-  .prog>div{height:100%;background:var(--s1);border-radius:3px;transition:width .3s}
-  .cheer{display:none;text-align:center;padding:14px;color:var(--good);font-weight:700}
+  .prog{height:12px;background:var(--grid);border-radius:6px;overflow:hidden;margin-top:14px}
+  .prog>div{height:100%;background:linear-gradient(90deg,var(--good),#7ce8ab);border-radius:6px;transition:width .3s}
+  .progTxt{color:var(--good);font-weight:700;font-size:.95rem;margin-top:6px}
+  .cheer{display:none;text-align:center;padding:16px;color:var(--good);font-weight:800;font-size:1.15rem}
   .tiles{display:flex;gap:10px;margin:0 16px}
-  .tile{flex:1;background:var(--surface);border:1px solid var(--ring);border-radius:14px;padding:12px}
-  .tile .v{font-size:1.5rem;font-weight:700}
-  .tile .l{color:var(--muted);font-size:.78rem}
-  .tile .d{font-size:.78rem;color:var(--good)}
-  label{display:block;color:var(--ink2);font-size:.85rem;margin:10px 0 4px}
+  .tile{flex:1;background:var(--surface);border:1px solid var(--ring);border-radius:18px;padding:14px}
+  .tile .v{font-size:1.8rem;font-weight:800}
+  .tile .l{color:var(--muted);font-size:.85rem}
+  .tile .d{font-size:.88rem;color:var(--good);font-weight:700}
+  label{display:block;color:var(--ink2);font-size:.95rem;margin:12px 0 5px;font-weight:600}
   input[type=number],input[type=date],input[type=text],select{
     width:100%;background:var(--page);color:var(--ink);border:1px solid var(--axis);
-    border-radius:10px;padding:10px 12px;font-size:1rem}
+    border-radius:12px;padding:13px 14px;font-size:1.05rem}
   .row{display:flex;gap:10px}.row>*{flex:1}
-  button{background:var(--s1);color:#fff;border:none;border-radius:10px;padding:12px 16px;
-         font-size:1rem;font-weight:600;width:100%;margin-top:12px}
+  button{background:linear-gradient(135deg,var(--acc),#ff5f6d);color:#fff;border:none;border-radius:12px;
+         padding:15px 16px;font-size:1.08rem;font-weight:700;width:100%;margin-top:14px}
   button.ghost{background:transparent;border:1px solid var(--axis);color:var(--ink2)}
+  .seg{display:flex;gap:8px}
+  .seg button{margin:0;padding:10px 4px;background:var(--page);border:1px solid var(--axis);
+              color:var(--ink2);font-size:1rem;border-radius:12px;flex:1}
+  .seg button span{display:block;font-size:.75rem;color:var(--muted);font-weight:600}
+  .seg button.on{background:linear-gradient(135deg,var(--acc),#ff5f6d);border-color:transparent;color:#fff}
+  .seg button.on span{color:#ffe3cc}
   nav{position:fixed;bottom:0;left:0;right:0;display:flex;background:var(--surface);
       border-top:1px solid var(--ring);padding-bottom:env(safe-area-inset-bottom)}
-  nav button{background:none;border:none;border-radius:0;color:var(--muted);font-size:.8rem;
-             padding:10px 0;margin:0;font-weight:600}
-  nav button.on{color:var(--s1)}
-  nav button .ico{display:block;font-size:1.25rem}
+  nav button{background:none;border:none;border-radius:0;color:var(--muted);font-size:.85rem;
+             padding:11px 0;margin:0;font-weight:700}
+  nav button.on{color:var(--acc)}
+  nav button .ico{display:block;font-size:1.45rem}
   .page{display:none}.page.on{display:block}
-  h2{font-size:1rem;margin-bottom:6px}
-  .legend{display:flex;gap:16px;font-size:.8rem;color:var(--ink2);margin:6px 0}
+  h2{font-size:1.15rem;margin-bottom:8px;font-weight:800}
+  .legend{display:flex;gap:16px;font-size:.88rem;color:var(--ink2);margin:6px 0}
   .legend i{display:inline-block;width:14px;height:3px;border-radius:2px;vertical-align:middle;margin-right:5px}
   svg text{font-family:inherit}
-  table{width:100%;border-collapse:collapse;font-size:.88rem}
-  td,th{padding:8px 4px;border-bottom:1px solid var(--grid);text-align:left}
-  th{color:var(--muted);font-weight:600;font-size:.78rem}
+  table{width:100%;border-collapse:collapse;font-size:.95rem}
+  td,th{padding:9px 4px;border-bottom:1px solid var(--grid);text-align:left}
+  th{color:var(--muted);font-weight:700;font-size:.85rem}
   td.num{font-variant-numeric:tabular-nums}
   .tip{position:absolute;background:var(--page);border:1px solid var(--axis);border-radius:8px;
-       padding:6px 10px;font-size:.8rem;pointer-events:none;display:none;white-space:nowrap;z-index:5}
-  .wk{color:var(--muted);font-size:.8rem;margin-top:8px}
-  .hint{color:var(--muted);font-size:.8rem;margin-top:8px}
+       padding:6px 10px;font-size:.85rem;pointer-events:none;display:none;white-space:nowrap;z-index:5}
+  .wk{color:var(--muted);font-size:.88rem;margin-top:8px}
+  .hint{color:var(--muted);font-size:.88rem;margin-top:8px}
 </style>
 </head>
 <body>
-<header>
-  <h1 id="hTitle">今日訓練</h1>
+<div class="hero">
+  <div class="hi" id="hGreet">今日訓練</div>
   <div class="date" id="hDate"></div>
-</header>
+  <div class="badges" id="phaseBadges"></div>
+  <div class="streak" id="streak"></div>
+</div>
 
 <!-- ═══ 今日 ═══ -->
 <div class="page on" id="pgToday">
   <div class="card">
-    <div id="phaseBadges"></div>
-    <h2 id="wName" style="margin-top:8px"></h2>
+    <h2 id="wName"></h2>
     <div id="wNote" class="hint"></div>
     <div id="exList"></div>
     <div class="prog"><div id="progBar" style="width:0%"></div></div>
-    <div class="cheer" id="cheer">🎉 今日課表完成！你又比昨天的自己強了一點。</div>
+    <div class="progTxt" id="progTxt"></div>
+    <div class="cheer" id="cheer">🎉 今日課表完成！你又比昨天的自己強了一點 💪</div>
     <div class="quote" id="quote"></div>
   </div>
   <div class="card">
     <h2>快速記錄</h2>
-    <div class="row">
-      <div><label>體重 kg</label><input type="number" id="inW" step="0.1" inputmode="decimal" placeholder="70.0"></div>
-      <div><label>睡眠 1–5</label><select id="inS"><option value="">—</option><option>1</option><option>2</option><option>3</option><option value="4">4</option><option>5</option></select></div>
+    <label>體重 kg</label><input type="number" id="inW" step="0.1" inputmode="decimal" placeholder="70.0">
+    <label>昨晚睡眠（90 分鐘一個循環）</label>
+    <div class="seg" id="segS">
+      <button type="button" onclick="setSleep(3,this)">😴 優<span>≥7.5h（5循環）</span></button>
+      <button type="button" onclick="setSleep(2,this)">🙂 普<span>6–7.5h（4循環）</span></button>
+      <button type="button" onclick="setSleep(1,this)">😪 差<span>&lt;6h</span></button>
     </div>
+    <div class="hint">定好起床時間往回推 5 個循環＋15 分入睡緩衝＝就寢時間。睡「差」的日子：晨間 HIIT 跳過、肌力照練但每動作少 1 組。</div>
     <div class="row">
       <div><label>腰圍 cm（週日量）</label><input type="number" id="inWa" step="0.5" inputmode="decimal" placeholder="選填"></div>
       <div><label>備註</label><input type="text" id="inN" placeholder="痛點/狀態"></div>
@@ -228,8 +246,19 @@ const isDeload=w=>w>0&&w%4===0;
 
 /* ── 今日頁 ── */
 function dayKeys(w,dw){return schedule(Math.max(w,1))[dw]}
+function streak(){
+  let n=0,d=new Date(today);
+  const active=k=>{const l=logs[k];return l&&((l.done&&Object.values(l.done).some(Boolean))||l.w)};
+  if(!active(iso(d)))d.setDate(d.getDate()-1);
+  while(active(iso(d))){n++;d.setDate(d.getDate()-1)}
+  return n;
+}
 function renderToday(){
+  const h=new Date().getHours();
+  document.getElementById('hGreet').textContent=h<11?'早安！今天也來變強 💪':h<18?'午安！保持節奏 ⚡':'晚上好！練起來 🔥';
   document.getElementById('hDate').textContent=today.toLocaleDateString('zh-TW',{month:'long',day:'numeric',weekday:'long'});
+  const sk=streak();
+  document.getElementById('streak').textContent=sk>0?'🔥 連續活躍 '+sk+' 天':'✨ 今天就是第 1 天';
   const badges=document.getElementById('phaseBadges');
   if(wk<1){badges.innerHTML='<span class="badge">計畫 '+cfg.start+' 開跑</span>';}
   else badges.innerHTML='<span class="badge">第 '+wk+' 週｜'+PHASE(wk)+'</span>'+(isDeload(wk)?'<span class="badge deload">🔋 減量週</span>':'');
@@ -248,6 +277,7 @@ function renderToday(){
   });
   const done=items.filter(i=>st[i]).length;
   document.getElementById('progBar').style.width=items.length?100*done/items.length+'%':'0%';
+  document.getElementById('progTxt').textContent=items.length?('完成 '+done+' / '+items.length+(done>0&&done<items.length?'，讚，繼續！':'')):'';
   document.getElementById('cheer').style.display=(items.length&&done===items.length)?'block':'none';
   const q=QUOTES[(today.getDate()+today.getMonth())%QUOTES.length];
   document.getElementById('quote').textContent='💬 '+q;
@@ -257,11 +287,17 @@ function tick(id,v){
   logs[TD].workout=dayKeys(wk,dow).join('+');
   LS.setItem('logs',JSON.stringify(logs));renderToday();renderTrend();
 }
+let _sleep=0;
+function setSleep(v,btn){
+  _sleep=v;
+  document.querySelectorAll('#segS button').forEach(b=>b.classList.remove('on'));
+  if(btn)btn.classList.add('on');
+}
 function saveLog(){
   logs[TD]=logs[TD]||{};
   const g=i=>document.getElementById(i).value;
   if(g('inW'))logs[TD].w=+g('inW');
-  if(g('inS'))logs[TD].s=+g('inS');
+  if(_sleep)logs[TD].s=_sleep;
   if(g('inWa'))logs[TD].wa=+g('inWa');
   if(g('inN'))logs[TD].n=g('inN');
   logs[TD].workout=logs[TD].workout||dayKeys(wk,dow).join('+');
@@ -282,8 +318,9 @@ let pts=[];
 function renderTrend(){
   const s=series();
   const tb=document.querySelector('#logTable tbody');tb.innerHTML='';
+  const SLP={3:'😴 優',2:'🙂 普',1:'😪 差'};
   Object.keys(logs).sort().reverse().slice(0,30).forEach(d=>{const l=logs[d];
-    tb.insertAdjacentHTML('beforeend','<tr><td class="num">'+d.slice(5)+'</td><td class="num">'+(l.w||'—')+'</td><td class="num">'+(l.s||'—')+'</td><td class="num">'+(l.wa||'—')+'</td><td>'+(l.done&&Object.values(l.done).some(Boolean)?'✅':'—')+'</td></tr>');});
+    tb.insertAdjacentHTML('beforeend','<tr><td class="num">'+d.slice(5)+'</td><td class="num">'+(l.w||'—')+'</td><td>'+(SLP[l.s]||'—')+'</td><td class="num">'+(l.wa||'—')+'</td><td>'+(l.done&&Object.values(l.done).some(Boolean)?'✅':'—')+'</td></tr>');});
   const a7=s.length?avg7(s,s.length-1):null;
   document.getElementById('tAvg').textContent=a7?a7.toFixed(1):'—';
   document.getElementById('tGoal').textContent=a7?(a7-60).toFixed(1):'—';
@@ -369,7 +406,8 @@ document.getElementById('inStart').value=cfg.start;
 document.getElementById('inVault').value=cfg.vault;
 document.getElementById('inPath').value=cfg.path;
 document.getElementById('inWk').value=Math.max(wk,1);
-if(logs[TD]){if(logs[TD].w)document.getElementById('inW').value=logs[TD].w;if(logs[TD].n)document.getElementById('inN').value=logs[TD].n;}
+if(logs[TD]){if(logs[TD].w)document.getElementById('inW').value=logs[TD].w;if(logs[TD].n)document.getElementById('inN').value=logs[TD].n;
+  if(logs[TD].s)setSleep(logs[TD].s,document.querySelectorAll('#segS button')[3-logs[TD].s]);}
 renderToday();renderTrend();
 </script>
 </body>

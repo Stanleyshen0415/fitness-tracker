@@ -42,8 +42,9 @@ console.assert(mkWeek('2026-07-06')===1 && mkWeek('2026-07-12')===1 && mkWeek('2
 console.assert(mkWeek('2026-07-05')===0, '開跑前=第0週');
 const s7=[...Array(10)].map((_,i)=>({d:iso(new Date(+new Date('2026-07-06T00:00:00')+i*864e5)),w:70-i*0.1}));
 const a=avg7(s7,9); console.assert(Math.abs(a-(70-(3+4+5+6+7+8+9)/7*0.1))<1e-9, 'avg7 取7日窗, got '+a);
-logs['2026-07-06']={w:70,s:4,workout:'A',n:'ok, good'};
-const c=csv(); console.assert(c.includes('2026-07-06,70,A,4,,ok； good'), 'CSV 行格式+逗號跳脫: '+c);
+logs['2026-07-06']={w:70,s:3,workout:'A',n:'ok, good'};
+const c=csv(); console.assert(c.includes('2026-07-06,70,A,3,,ok； good'), 'CSV 行格式+逗號跳脫: '+c);
+setSleep(2); console.assert(_sleep===2, 'setSleep 存值');
 document.getElementById('inWk').value='13'; renderPlan();
 renderToday(); renderTrend();
 console.log('ALL SMOKE TESTS PASSED');
