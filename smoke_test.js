@@ -52,9 +52,18 @@ const todayItems=dayKeys(wk,dow).flatMap(k=>W[k].ex); // 勾「今日課表內�
 logs[TD]={w:69.9,s:2,done:{[todayItems[0]]:true,[todayItems[1]]:true},n:'膝OK'};
 sendToday();
 assert(logs[TD].sent===true, 'sendToday 標記 sent');
-assert(location.href.includes('adv-uri') && location.href.includes(encodeURIComponent('健身日誌.md')), 'sendToday 產生 adv-uri: '+location.href);
+assert(location.href.includes('adv-uri') && location.href.includes(encodeURIComponent('健身日誌/健身紀錄log.md')), 'sendToday 產生 adv-uri: '+location.href);
 assert(decodeURIComponent(location.href).includes('完成2/'), 'sendToday note 帶完成數: '+decodeURIComponent(location.href));
 assert(morningDone()===true, 'morningDone 判定');
+// 導引卡：除有氧/休息外每動作都要有卡+至少1支影片
+Object.keys(EX).filter(k=>!['walk','liss','yoga'].includes(k)).forEach(k=>{
+  assert(G[k]&&G[k].s&&G[k].e&&G[k].r, '缺導引卡: '+k);
+  assert(G[k].v.length>=1&&G[k].v.every(x=>x[1].startsWith('https://www.youtube.com/')), '導引卡影片異常: '+k);
+});
+gOpen.add('mc');
+assert(guideHTML('mc').includes('youtube.com')&&guideHTML('mc').includes('步驟'), 'guideHTML 展開含影片與步驟');
+assert(guideHTML('walk')==='', '有氧不出導引卡');
+assert(cfg.path==='健身日誌/健身紀錄log.md', '日誌預設路徑=資料夾版: '+cfg.path);
 document.getElementById('inWk').value='13'; renderPlan();
 renderToday(); renderTrend();
 console.log('ALL SMOKE TESTS PASSED');
