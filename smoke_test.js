@@ -37,6 +37,7 @@ for(let w of [1,13,25]){const sc=schedule(w);
     console.assert(W[k], '未定義課表鍵 '+k);
     W[k].ex.forEach(i=>console.assert(EX[i],'未定義動作 '+i));
   });}
+console.assert(iso(new Date('2026-07-02T00:30:00'))==='2026-07-02', 'iso 必須用本地時區（UTC 會差一天）：'+iso(new Date('2026-07-02T00:30:00')));
 const mkWeek = ds => { const s=new Date(cfg.start+'T00:00:00'); return Math.floor((new Date(ds+'T00:00:00')-s)/6048e5)+1 };
 console.assert(mkWeek('2026-07-06')===1 && mkWeek('2026-07-12')===1 && mkWeek('2026-07-13')===2, '週界線');
 console.assert(mkWeek('2026-07-05')===0, '開跑前=第0週');

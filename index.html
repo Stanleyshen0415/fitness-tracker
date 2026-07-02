@@ -238,7 +238,7 @@ const LS=localStorage;
 const cfg=JSON.parse(LS.getItem('cfg')||'{"start":"2026-07-06","vault":"StanleyInbox","path":"健身日誌.md"}');
 const logs=JSON.parse(LS.getItem('logs')||'{}');   // {date:{w,s,wa,n,done,workout}}
 const today=new Date(); today.setHours(0,0,0,0);
-const iso=d=>d.toISOString().slice(0,10);
+const iso=d=>d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); // 本地時區，避免 UTC 差一天
 const TD=iso(today);
 function weekOf(d){const s=new Date(cfg.start+'T00:00:00');return Math.floor((d-s)/6048e5)+1}
 const wk=weekOf(today), dow=today.getDay();
