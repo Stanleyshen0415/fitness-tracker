@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#0d0d0d">
+<title>今日訓練</title>
+<style>
+  :root{
+    --page:#0d0d0d; --surface:#1a1a19; --ink:#ffffff; --ink2:#c3c2b7; --muted:#898781;
+    --grid:#2c2c2a; --axis:#383835; --s1:#3987e5; --s1l:#6da7ec; --good:#0ca30c;
+    --ring:rgba(255,255,255,0.10);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--page);color:var(--ink);font-family:system-ui,-apple-system,"Segoe UI",sans-serif;
+       font-size:16px;line-height:1.55;padding-bottom:80px}
+  header{padding:20px 16px 8px}
+  header h1{font-size:1.15rem;font-weight:700}
+  header .date{color:var(--ink2);font-size:.9rem}
+  .card{background:var(--surface);border:1px solid var(--ring);border-radius:14px;margin:12px 16px;padding:16px}
+  .badge{display:inline-block;font-size:.75rem;padding:2px 10px;border-radius:99px;border:1px solid var(--ring);color:var(--ink2);margin-right:6px}
+  .badge.deload{color:#fab219;border-color:#fab21955}
+  .quote{color:var(--ink2);font-size:.92rem;border-left:3px solid var(--s1);padding-left:10px;margin-top:10px}
+  .ex{display:flex;gap:12px;align-items:flex-start;padding:12px 0;border-bottom:1px solid var(--grid)}
+  .ex:last-child{border-bottom:none}
+  .ex input[type=checkbox]{width:24px;height:24px;margin-top:3px;accent-color:var(--s1);flex-shrink:0}
+  .ex .n{font-weight:600}
+  .ex .m{color:var(--ink2);font-size:.85rem}
+  .ex .c{color:var(--muted);font-size:.82rem;margin-top:2px}
+  .ex.done .n{color:var(--muted);text-decoration:line-through}
+  .prog{height:6px;background:var(--grid);border-radius:3px;overflow:hidden;margin-top:12px}
+  .prog>div{height:100%;background:var(--s1);border-radius:3px;transition:width .3s}
+  .cheer{display:none;text-align:center;padding:14px;color:var(--good);font-weight:700}
+  .tiles{display:flex;gap:10px;margin:0 16px}
+  .tile{flex:1;background:var(--surface);border:1px solid var(--ring);border-radius:14px;padding:12px}
+  .tile .v{font-size:1.5rem;font-weight:700}
+  .tile .l{color:var(--muted);font-size:.78rem}
+  .tile .d{font-size:.78rem;color:var(--good)}
+  label{display:block;color:var(--ink2);font-size:.85rem;margin:10px 0 4px}
+  input[type=number],input[type=date],input[type=text],select{
+    width:100%;background:var(--page);color:var(--ink);border:1px solid var(--axis);
+    border-radius:10px;padding:10px 12px;font-size:1rem}
+  .row{display:flex;gap:10px}.row>*{flex:1}
+  button{background:var(--s1);color:#fff;border:none;border-radius:10px;padding:12px 16px;
+         font-size:1rem;font-weight:600;width:100%;margin-top:12px}
+  button.ghost{background:transparent;border:1px solid var(--axis);color:var(--ink2)}
+  nav{position:fixed;bottom:0;left:0;right:0;display:flex;background:var(--surface);
+      border-top:1px solid var(--ring);padding-bottom:env(safe-area-inset-bottom)}
+  nav button{background:none;border:none;border-radius:0;color:var(--muted);font-size:.8rem;
+             padding:10px 0;margin:0;font-weight:600}
+  nav button.on{color:var(--s1)}
+  nav button .ico{display:block;font-size:1.25rem}
+  .page{display:none}.page.on{display:block}
+  h2{font-size:1rem;margin-bottom:6px}
+  .legend{display:flex;gap:16px;font-size:.8rem;color:var(--ink2);margin:6px 0}
+  .legend i{display:inline-block;width:14px;height:3px;border-radius:2px;vertical-align:middle;margin-right:5px}
+  svg text{font-family:inherit}
+  table{width:100%;border-collapse:collapse;font-size:.88rem}
+  td,th{padding:8px 4px;border-bottom:1px solid var(--grid);text-align:left}
+  th{color:var(--muted);font-weight:600;font-size:.78rem}
+  td.num{font-variant-numeric:tabular-nums}
+  .tip{position:absolute;background:var(--page);border:1px solid var(--axis);border-radius:8px;
+       padding:6px 10px;font-size:.8rem;pointer-events:none;display:none;white-space:nowrap;z-index:5}
+  .wk{color:var(--muted);font-size:.8rem;margin-top:8px}
+  .hint{color:var(--muted);font-size:.8rem;margin-top:8px}
+</style>
+</head>
+<body>
+<header>
+  <h1 id="hTitle">今日訓練</h1>
+  <div class="date" id="hDate"></div>
+</header>
+
+<!-- ═══ 今日 ═══ -->
+<div class="page on" id="pgToday">
+  <div class="card">
+    <div id="phaseBadges"></div>
+    <h2 id="wName" style="margin-top:8px"></h2>
+    <div id="wNote" class="hint"></div>
+    <div id="exList"></div>
+    <div class="prog"><div id="progBar" style="width:0%"></div></div>
+    <div class="cheer" id="cheer">🎉 今日課表完成！你又比昨天的自己強了一點。</div>
+    <div class="quote" id="quote"></div>
+  </div>
+  <div class="card">
+    <h2>快速記錄</h2>
+    <div class="row">
+      <div><label>體重 kg</label><input type="number" id="inW" step="0.1" inputmode="decimal" placeholder="70.0"></div>
+      <div><label>睡眠 1–5</label><select id="inS"><option value="">—</option><option>1</option><option>2</option><option>3</option><option value="4">4</option><option>5</option></select></div>
+    </div>
+    <div class="row">
+      <div><label>腰圍 cm（週日量）</label><input type="number" id="inWa" step="0.5" inputmode="decimal" placeholder="選填"></div>
+      <div><label>備註</label><input type="text" id="inN" placeholder="痛點/狀態"></div>
+    </div>
+    <button onclick="saveLog()">儲存今日紀錄</button>
+    <div class="hint" id="saveMsg"></div>
+  </div>
+</div>
+
+<!-- ═══ 趨勢 ═══ -->
+<div class="page" id="pgTrend">
+  <div class="tiles">
+    <div class="tile"><div class="v" id="tAvg">—</div><div class="l">7 天均重 kg</div><div class="d" id="tAvgD"></div></div>
+    <div class="tile"><div class="v" id="tGoal">—</div><div class="l">距目標 60kg</div></div>
+    <div class="tile"><div class="v" id="tWk">—</div><div class="l">本週訓練</div></div>
+  </div>
+  <div class="card" style="position:relative">
+    <h2>體重趨勢</h2>
+    <div class="legend">
+      <span><i style="background:var(--s1l);height:8px;width:8px;border-radius:50%"></i>每日</span>
+      <span><i style="background:var(--s1)"></i>7 天平均</span>
+      <span style="color:var(--muted)">- - 目標 60</span>
+    </div>
+    <svg id="chart" width="100%" height="230" role="img" aria-label="體重趨勢圖，數據見下表"></svg>
+    <div class="tip" id="tip"></div>
+  </div>
+  <div class="card">
+    <h2>紀錄（同圖表數據）</h2>
+    <table id="logTable"><thead><tr><th>日期</th><th>體重</th><th>睡眠</th><th>腰圍</th><th>訓練</th></tr></thead><tbody></tbody></table>
+    <button class="ghost" onclick="copyCSV()">📋 複製全部 CSV（給 AI 分析）</button>
+    <button class="ghost" onclick="toObsidian()">📥 今日一行回寫 Obsidian</button>
+  </div>
+</div>
+
+<!-- ═══ 課表 ═══ -->
+<div class="page" id="pgPlan">
+  <div class="card">
+    <h2>週課表總覽</h2>
+    <div class="row">
+      <div><label>看第幾週</label><input type="number" id="inWk" min="1" max="52" onchange="renderPlan()"></div>
+    </div>
+    <div id="planView"></div>
+  </div>
+  <div class="card">
+    <h2>設定</h2>
+    <label>計畫開始日（W1 週一）</label><input type="date" id="inStart" onchange="saveCfg()">
+    <label>Obsidian vault 名稱</label><input type="text" id="inVault" onchange="saveCfg()">
+    <label>日誌檔路徑</label><input type="text" id="inPath" onchange="saveCfg()">
+    <div class="hint">完整計畫文件（動作導引卡＋教學影片＋營養）在 Obsidian 待看夾與 StanleyBrain repo。</div>
+  </div>
+</div>
+
+<nav>
+  <button class="on" style="flex:1" onclick="go('Today',this)"><span class="ico">🏋️</span>今日</button>
+  <button style="flex:1" onclick="go('Trend',this)"><span class="ico">📈</span>趨勢</button>
+  <button style="flex:1" onclick="go('Plan',this)"><span class="ico">📅</span>課表</button>
+</nav>
+
+<script>
+/* ── 資料：課表定義（Phase 1/2 計畫文件為準） ── */
+const EX = {
+  sq:{n:'椅子輔助箱式深蹲→酒杯蹲',m:'3×8–10｜RPE6–7｜3-1-1｜休90s',c:'膝蓋推向小趾方向；碰椅即起、不坐死'},
+  cp:{n:'Torus 5 坐姿胸推',m:'3×10–12｜RPE6–7｜3-1-1｜休75s',c:'肩胛後收下沉貼椅背；手肘貼身45°'},
+  rw:{n:'Torus 5 坐姿划船',m:'3×10–12｜RPE6–7｜2-1-2｜休75s',c:'手肘往後口袋插；上身像釘住的門柱'},
+  rdl:{n:'彈力繩羅馬尼亞硬舉',m:'3×12｜RPE6｜3-1-1｜休60s',c:'屁股往後推、繩到小腿中段即停；胸口挺'},
+  fp:{n:'彈力繩面拉',m:'2×15｜RPE5–6｜休45s',c:'先沉肩胛再拉；想像把繩子撕開'},
+  db:{n:'死蟲式',m:'2×8/側｜慢而穩｜休30s',c:'腰全程貼地；下放時長吐氣'},
+  gb:{n:'臀橋（W3起單腳漸進）',m:'3×12–15｜RPE6–7｜頂端夾2秒｜休60s',c:'臀夾緊、肋骨收住；腰有感=做錯'},
+  lp:{n:'Torus 5 滑輪下拉（胸前）',m:'3×10–12｜RPE6–7｜2-1-2｜休75s',c:'手肘往骨盆拉；手掌只是鉤子'},
+  ip:{n:'上斜伏地挺身',m:'3×8–12｜RPE6–7｜3-1-1｜休60s',c:'身體一塊板；手肘往後45°不外開'},
+  pp:{n:'帕洛夫推壓',m:'2×10/側｜推出停3秒｜休45s',c:'核心抗旋轉撐住不動；推出時吐氣'},
+  er:{n:'彈力繩肩外旋',m:'2×15/側｜RPE5｜休30s',c:'手肘夾毛巾當門軸；永遠用輕阻力'},
+  bd:{n:'鳥狗式',m:'2×8/側｜頂端停3秒｜休30s',c:'腰上放一杯水不能灑；延伸不是抬高'},
+  mc:{n:'麥吉爾捲腹',m:'2×6/側｜頂端停8秒',c:'頭肩只離地一張紙的高度'},
+  spl:{n:'側棒式（膝著地起步）',m:'2×20–30s/側',c:'恥骨往前推、把地板推遠'},
+  ss:{n:'分腿蹲',m:'3×8–10/側｜RPE6–7｜休60s',c:'像電梯垂直下降；體重8成在前腳'},
+  op:{n:'彈力繩斜上推45°',m:'3×10/側｜RPE6–7｜休60s',c:'往前上方45°牆角推；肩刺痛立停'},
+  srdl:{n:'單腳羅馬尼亞硬舉',m:'3×10/側｜RPE6｜休60s',c:'褲頭兩邊一樣高；後腳趾指地板'},
+  lc:{n:'Torus 5 腿彎舉',m:'3×10–12｜RPE6–7｜3秒慢放｜休60s',c:'肚子夾緊只有小腿動'},
+  cc:{n:'跪姿滑輪捲腹',m:'3×12｜RPE7｜休45s',c:'用腹肌捲、不是用手拉'},
+  lr:{n:'彈力繩側平舉（拇指朝上）',m:'3×12–15｜RPE6｜休45s',c:'肩胛平面、舉到肩高即可'},
+  td:{n:'滑輪三頭下壓',m:'3×12｜RPE6–7｜休45s',c:'手肘釘在身側'},
+  bc:{n:'二頭彎舉（低滑輪/彈力繩）',m:'3×12｜RPE6–7｜休45s',c:'手肘不前移'},
+  walk:{n:'快走',m:'30–40 分',c:'能講話但不能唱歌的速度'},
+  liss:{n:'LISS 快走',m:'45–60 分',c:'脂肪氧化主場，戴耳機聽 podcast'},
+  yoga:{n:'瑜珈舒緩＋量測日',m:'腰圍＋照片＋看七天均重',c:'讓身體休一天'},
+};
+const W = {
+  A:{name:'肌力 A｜蹲＋水平推拉（45分）',ex:['sq','cp','rw','rdl','fp','db']},
+  B:{name:'肌力 B｜髖＋垂直拉（45分）',ex:['gb','lp','ip','pp','er','bd']},
+  M:{name:'保養套餐｜護腰護肩（12分）',ex:['mc','spl','bd','er','fp']},
+  L1:{name:'下肢 1（45分）',ex:['sq','lc','rdl','spl']},
+  U1:{name:'上肢 1｜推主導（45分）',ex:['cp','op','lp','fp']},
+  L2:{name:'下肢 2｜單邊（45分）',ex:['ss','srdl','gb','pp']},
+  U2:{name:'上肢 2｜拉主導（45分）',ex:['rw','ip','lp','er']},
+  AB1:{name:'＋腹肌專項（10分）',ex:['cc','spl']},
+  AB2:{name:'＋腹肌專項（10分）',ex:['db','pp']},
+  AR1:{name:'＋弱點優先（10分）',ex:['lr','td']},
+  AR2:{name:'＋弱點優先（10分）',ex:['bc','fp']},
+  WALK:{name:'低強度有氧',ex:['walk']},
+  LISS:{name:'LISS 有氧日',ex:['liss']},
+  REST:{name:'休息日',ex:['yoga']},
+};
+/* 週 → 每日課表鍵。dow: 0=日…6=六 */
+function schedule(wk){
+  if(wk<=12) return {1:['A'],2:['M'],3:['B'],4:['M'],5:[wk%2?'A':'B'],6:['WALK'],0:['REST']};
+  if(wk<=24) return {1:['L1'],2:['U1'],3:['REST'],4:['L2'],5:['U2'],6:['WALK'],0:['REST']};
+  return {1:['L1','AB1'],2:['U1','AR1'],3:['REST'],4:['L2','AB2'],5:['U2','AR2'],6:['LISS'],0:['REST']};
+}
+const PHASE=w=>w<=12?'基礎鞏固期':w<=24?'肌力累積期':'分化專項期';
+const QUOTES=[
+ '你不是在減重，你是在把 10 年後的自己練回來。',
+ '46 歲開始永遠不晚——晚的是明天才開始。',
+ '每一組慢放下，都是存進關節的退休金。',
+ '腹肌是在廚房跟餐桌上刻出來的，訓練只是雕刻刀。',
+ '今天只要出現，就贏過 90% 躺著的人。',
+ '肌肉不知道今天星期幾，它只知道你有沒有來。',
+ '睡飽的那天，你舉起的不只是重量，還有恢復力。',
+ '慢就是穩，穩就是快——關節版的複利。',
+ '你在教兒子最重要的一課：身體是可以被管理的。',
+ '體重機量的是水分心情和昨晚的麵，趨勢線量的才是你。',
+ '最好的計畫，是你做得完的那一個。',
+ '疲勞會說謊，日誌不會——記下來就好。',
+ '減量週不是偷懶，是聰明人的火力保養。',
+ '你已經比開始前的自己強了，證據就在打勾裡。',
+ '呼吸中止的最強處方箋，正在你手上執行。',
+];
+/* ── 狀態 ── */
+const LS=localStorage;
+const cfg=JSON.parse(LS.getItem('cfg')||'{"start":"2026-07-06","vault":"StanleyInbox","path":"健身日誌.md"}');
+const logs=JSON.parse(LS.getItem('logs')||'{}');   // {date:{w,s,wa,n,done,workout}}
+const today=new Date(); today.setHours(0,0,0,0);
+const iso=d=>d.toISOString().slice(0,10);
+const TD=iso(today);
+function weekOf(d){const s=new Date(cfg.start+'T00:00:00');return Math.floor((d-s)/6048e5)+1}
+const wk=weekOf(today), dow=today.getDay();
+const isDeload=w=>w>0&&w%4===0;
+
+/* ── 今日頁 ── */
+function dayKeys(w,dw){return schedule(Math.max(w,1))[dw]}
+function renderToday(){
+  document.getElementById('hDate').textContent=today.toLocaleDateString('zh-TW',{month:'long',day:'numeric',weekday:'long'});
+  const badges=document.getElementById('phaseBadges');
+  if(wk<1){badges.innerHTML='<span class="badge">計畫 '+cfg.start+' 開跑</span>';}
+  else badges.innerHTML='<span class="badge">第 '+wk+' 週｜'+PHASE(wk)+'</span>'+(isDeload(wk)?'<span class="badge deload">🔋 減量週</span>':'');
+  const keys=dayKeys(wk,dow);
+  document.getElementById('wName').textContent=keys.map(k=>W[k].name).join(' ');
+  document.getElementById('wNote').textContent=isDeload(wk)&&keys[0]!=='REST'?'減量週：全動作組數減半、阻力 −20%、RPE ≤6。照做，這是計畫的一部分。':'暖身：最偉大拉伸×3 → 開始。收操：瑜珈舒緩 10 分。';
+  const st=(logs[TD]&&logs[TD].done)||{};
+  const list=document.getElementById('exList');
+  list.innerHTML='';
+  let items=[];keys.forEach(k=>items=items.concat(W[k].ex));
+  items.forEach(id=>{
+    const e=EX[id],d=!!st[id];
+    const div=document.createElement('div');div.className='ex'+(d?' done':'');
+    div.innerHTML='<input type="checkbox" '+(d?'checked':'')+' onchange="tick(\''+id+'\',this.checked)"><div><div class="n">'+e.n+'</div><div class="m">'+e.m+'</div><div class="c">💡 '+e.c+'</div></div>';
+    list.appendChild(div);
+  });
+  const done=items.filter(i=>st[i]).length;
+  document.getElementById('progBar').style.width=items.length?100*done/items.length+'%':'0%';
+  document.getElementById('cheer').style.display=(items.length&&done===items.length)?'block':'none';
+  const q=QUOTES[(today.getDate()+today.getMonth())%QUOTES.length];
+  document.getElementById('quote').textContent='💬 '+q;
+}
+function tick(id,v){
+  logs[TD]=logs[TD]||{};logs[TD].done=logs[TD].done||{};logs[TD].done[id]=v;
+  logs[TD].workout=dayKeys(wk,dow).join('+');
+  LS.setItem('logs',JSON.stringify(logs));renderToday();renderTrend();
+}
+function saveLog(){
+  logs[TD]=logs[TD]||{};
+  const g=i=>document.getElementById(i).value;
+  if(g('inW'))logs[TD].w=+g('inW');
+  if(g('inS'))logs[TD].s=+g('inS');
+  if(g('inWa'))logs[TD].wa=+g('inWa');
+  if(g('inN'))logs[TD].n=g('inN');
+  logs[TD].workout=logs[TD].workout||dayKeys(wk,dow).join('+');
+  LS.setItem('logs',JSON.stringify(logs));
+  document.getElementById('saveMsg').textContent='✅ 已存（'+TD+'）。資料只在這支手機上，記得定期「複製 CSV」備份。';
+  renderTrend();
+}
+/* ── 趨勢頁 ── */
+function series(){
+  return Object.keys(logs).filter(d=>logs[d].w).sort().map(d=>({d,w:logs[d].w}));
+}
+function avg7(arr,i){
+  const t0=new Date(arr[i].d+'T00:00:00')-6048e5;
+  const win=arr.filter(p=>new Date(p.d+'T00:00:00')>t0&&p.d<=arr[i].d);
+  return win.reduce((s,p)=>s+p.w,0)/win.length;
+}
+let pts=[];
+function renderTrend(){
+  const s=series();
+  const tb=document.querySelector('#logTable tbody');tb.innerHTML='';
+  Object.keys(logs).sort().reverse().slice(0,30).forEach(d=>{const l=logs[d];
+    tb.insertAdjacentHTML('beforeend','<tr><td class="num">'+d.slice(5)+'</td><td class="num">'+(l.w||'—')+'</td><td class="num">'+(l.s||'—')+'</td><td class="num">'+(l.wa||'—')+'</td><td>'+(l.done&&Object.values(l.done).some(Boolean)?'✅':'—')+'</td></tr>');});
+  const a7=s.length?avg7(s,s.length-1):null;
+  document.getElementById('tAvg').textContent=a7?a7.toFixed(1):'—';
+  document.getElementById('tGoal').textContent=a7?(a7-60).toFixed(1):'—';
+  if(s.length>7){const prev=avg7(s,s.length-2);const d=a7-prev;
+    document.getElementById('tAvgD').textContent=(d<=0?'↓ ':'↑ ')+Math.abs(d).toFixed(2);}
+  const mon=new Date(today);mon.setDate(mon.getDate()-((dow+6)%7));
+  let n=0,target=wk<=12?3:4;
+  for(let i=0;i<7;i++){const d=iso(new Date(+mon+i*864e5));
+    if(logs[d]&&logs[d].done&&Object.values(logs[d].done).some(Boolean)&&!['REST','WALK','LISS','M'].includes((logs[d].workout||'').split('+')[0]))n++;}
+  document.getElementById('tWk').textContent=n+'/'+target;
+  drawChart(s);
+}
+function drawChart(s){
+  const svg=document.getElementById('chart');const Wd=svg.clientWidth||340,H=230,P={l:34,r:10,t:10,b:22};
+  svg.setAttribute('viewBox','0 0 '+Wd+' '+H);svg.innerHTML='';pts=[];
+  if(s.length<2){svg.innerHTML='<text x="'+Wd/2+'" y="110" fill="#898781" text-anchor="middle" font-size="13">記錄 2 天以上就會出現趨勢線</text>';return}
+  const xs=s.map(p=>+new Date(p.d+'T00:00:00'));
+  const ys=s.map(p=>p.w).concat(s.map((_,i)=>avg7(s,i))).concat([60]);
+  const x0=Math.min(...xs),x1=Math.max(...xs);
+  let y0=Math.min(...ys)-.5,y1=Math.max(...ys)+.5;
+  const X=v=>P.l+(Wd-P.l-P.r)*(x1===x0?0.5:(v-x0)/(x1-x0));
+  const Y=v=>P.t+(H-P.t-P.b)*(1-(v-y0)/(y1-y0));
+  let g='';
+  for(let v=Math.ceil(y0);v<=y1;v++){g+='<line x1="'+P.l+'" x2="'+(Wd-P.r)+'" y1="'+Y(v)+'" y2="'+Y(v)+'" stroke="var(--grid)" stroke-width="1"/><text x="'+(P.l-6)+'" y="'+(Y(v)+4)+'" fill="var(--muted)" font-size="10" text-anchor="end">'+v+'</text>';}
+  g+='<line x1="'+P.l+'" x2="'+(Wd-P.r)+'" y1="'+Y(60)+'" y2="'+Y(60)+'" stroke="var(--muted)" stroke-width="1" stroke-dasharray="4 4"/>';
+  s.forEach((p,i)=>{pts.push({x:X(xs[i]),y:Y(p.w),d:p.d,w:p.w,a:avg7(s,i)});});
+  g+=pts.map(p=>'<circle cx="'+p.x+'" cy="'+p.y+'" r="3.5" fill="var(--s1l)"/>').join('');
+  g+='<path d="'+pts.map((p,i)=>(i?'L':'M')+p.x+' '+Y(p.a)).join('')+'" fill="none" stroke="var(--s1)" stroke-width="2" stroke-linejoin="round"/>';
+  const last=pts[pts.length-1];
+  g+='<text x="'+(last.x-4)+'" y="'+(Y(last.a)-8)+'" fill="var(--ink2)" font-size="11" text-anchor="end">'+last.a.toFixed(1)+'</text>';
+  const d0=s[0].d.slice(5),d1=s[s.length-1].d.slice(5);
+  g+='<text x="'+P.l+'" y="'+(H-6)+'" fill="var(--muted)" font-size="10">'+d0+'</text><text x="'+(Wd-P.r)+'" y="'+(H-6)+'" fill="var(--muted)" font-size="10" text-anchor="end">'+d1+'</text>';
+  svg.innerHTML=g;
+}
+(function(){ /* hover/touch tooltip */
+  const svg=document.getElementById('chart'),tip=document.getElementById('tip');
+  function mv(ev){
+    if(!pts.length)return;
+    const r=svg.getBoundingClientRect(),x=(ev.touches?ev.touches[0].clientX:ev.clientX)-r.left;
+    let best=pts[0];pts.forEach(p=>{if(Math.abs(p.x-x)<Math.abs(best.x-x))best=p});
+    tip.style.display='block';tip.style.left=Math.min(best.x+10,r.width-120)+'px';tip.style.top=(best.y+20)+'px';
+    tip.innerHTML=best.d.slice(5)+'｜'+best.w+' kg<br>7日均 '+best.a.toFixed(1);
+  }
+  svg.addEventListener('pointermove',mv);svg.addEventListener('touchstart',mv,{passive:true});
+  svg.addEventListener('pointerleave',()=>tip.style.display='none');
+})();
+/* ── 匯出 ── */
+function csv(){
+  let out='date,weight_kg,workout,sleep_score,waist_cm,note\n';
+  Object.keys(logs).sort().forEach(d=>{const l=logs[d];
+    out+=[d,l.w||'',l.workout||'',l.s||'',l.wa||'',(l.n||'').replace(/,/g,'；')].join(',')+'\n';});
+  return out;
+}
+function copyCSV(){navigator.clipboard.writeText(csv()).then(()=>alert('已複製 '+Object.keys(logs).length+' 天紀錄。貼給 Claude 分析，或貼進 Obsidian 備份。'))}
+function toObsidian(){
+  const l=logs[TD]||{};
+  const line=[TD,l.w||'',l.workout||dayKeys(wk,dow).join('+'),l.s||'',l.wa||'',l.n||''].join(',');
+  location.href='obsidian://adv-uri?vault='+encodeURIComponent(cfg.vault)+'&filepath='+encodeURIComponent(cfg.path)+'&data='+encodeURIComponent(line)+'&mode=append';
+}
+/* ── 課表頁 / 設定 ── */
+function renderPlan(){
+  const w=+document.getElementById('inWk').value||Math.max(wk,1);
+  const sc=schedule(w),names=['日','一','二','三','四','五','六'];
+  let h='<div class="wk">第 '+w+' 週｜'+PHASE(w)+(isDeload(w)?'｜🔋 減量週':'')+'</div>';
+  [1,2,3,4,5,6,0].forEach(d=>{
+    h+='<div class="ex"><div><div class="n">週'+names[d]+'</div><div class="m">'+sc[d].map(k=>W[k].name).join('｜')+'</div><div class="c">'+sc[d].flatMap(k=>W[k].ex).map(i=>EX[i].n).join('、')+'</div></div></div>';});
+  document.getElementById('planView').innerHTML=h;
+}
+function saveCfg(){
+  cfg.start=document.getElementById('inStart').value||cfg.start;
+  cfg.vault=document.getElementById('inVault').value||cfg.vault;
+  cfg.path=document.getElementById('inPath').value||cfg.path;
+  LS.setItem('cfg',JSON.stringify(cfg));location.reload();
+}
+function go(p,btn){
+  document.querySelectorAll('.page').forEach(e=>e.classList.remove('on'));
+  document.getElementById('pg'+p).classList.add('on');
+  document.querySelectorAll('nav button').forEach(b=>b.classList.remove('on'));btn.classList.add('on');
+  if(p==='Trend')renderTrend();if(p==='Plan')renderPlan();
+}
+/* init */
+document.getElementById('inStart').value=cfg.start;
+document.getElementById('inVault').value=cfg.vault;
+document.getElementById('inPath').value=cfg.path;
+document.getElementById('inWk').value=Math.max(wk,1);
+if(logs[TD]){if(logs[TD].w)document.getElementById('inW').value=logs[TD].w;if(logs[TD].n)document.getElementById('inN').value=logs[TD].n;}
+renderToday();renderTrend();
+</script>
+</body>
+</html>
