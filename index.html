@@ -3,116 +3,166 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="theme-color" content="#0d0d0d">
+<meta name="theme-color" content="#0a0e16">
 <title>今日訓練</title>
 <style>
   :root{
-    --page:#0d0d0d; --surface:#1a1a19; --ink:#ffffff; --ink2:#c3c2b7; --muted:#898781;
-    --grid:#2c2c2a; --axis:#383835; --s1:#3987e5; --s1l:#6da7ec; --good:#35d07f;
-    --acc:#ff8a3d; --acc2:#ffb347; --ring:rgba(255,255,255,0.10);
+    --page:#0a0e16; --surface:#131824; --surface2:#1a2130; --ink:#ffffff; --ink2:#aab3c5;
+    --muted:#6b7488; --line:#232b3d; --teal:#2dd4a0; --blue:#3b82f6; --blueL:#7fb0f9;
+    --orange:#ff9f43; --ring:rgba(255,255,255,0.06);
   }
   *{box-sizing:border-box;margin:0;padding:0}
   body{background:var(--page);color:var(--ink);font-family:system-ui,-apple-system,"Segoe UI",sans-serif;
-       font-size:18px;line-height:1.6;padding-bottom:92px}
-  .hero{margin:14px 16px 4px;padding:20px 18px;border-radius:18px;
-        background:linear-gradient(135deg,#ff8a3d 0%,#ff5f6d 55%,#c94fd1 120%);
-        box-shadow:0 8px 28px rgba(255,110,80,.25)}
-  .hero .hi{font-size:1.45rem;font-weight:800;letter-spacing:.5px}
-  .hero .date{font-size:.95rem;opacity:.92;margin-top:2px}
-  .hero .badges{margin-top:10px}
-  .hero .badge{background:rgba(255,255,255,.18);border:none;color:#fff}
-  .hero .streak{margin-top:10px;font-weight:700;font-size:1rem}
-  .card{background:var(--surface);border:1px solid var(--ring);border-radius:18px;margin:14px 16px;padding:18px}
-  .badge{display:inline-block;font-size:.85rem;padding:3px 12px;border-radius:99px;border:1px solid var(--ring);color:var(--ink2);margin-right:6px;font-weight:600}
-  .badge.deload{color:#ffd166;border-color:#ffd16655}
-  .quote{color:#ffd9b8;font-size:1.02rem;font-weight:600;border-left:4px solid var(--acc);padding-left:12px;margin-top:14px;line-height:1.5}
-  .ex{display:flex;gap:14px;align-items:flex-start;padding:14px 0;border-bottom:1px solid var(--grid)}
+       font-size:17px;line-height:1.6;padding-bottom:92px}
+  /* ── header ── */
+  header{padding:22px 20px 6px}
+  header .hi{font-size:1.4rem;font-weight:800;letter-spacing:.3px}
+  header .date{color:var(--muted);font-size:.92rem;margin-top:2px}
+  header .meta{margin-top:10px;display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+  .badge{display:inline-block;font-size:.82rem;padding:4px 12px;border-radius:99px;
+         background:var(--surface2);color:var(--ink2);font-weight:600}
+  .badge.deload{color:#ffd166;background:#2a2413}
+  .badge.streak{color:var(--teal);background:#11251f}
+  /* 週曆條 */
+  .wstrip{display:flex;gap:6px;margin:14px 16px 0}
+  .wstrip .d{flex:1;text-align:center;padding:8px 0;border-radius:14px;background:var(--surface);
+             color:var(--muted);font-size:.78rem;line-height:1.35}
+  .wstrip .d b{display:block;color:var(--ink2);font-size:1.02rem}
+  .wstrip .d span{display:block;font-size:.7rem}
+  .wstrip .d.today{background:var(--blue);color:#dbeafe}
+  .wstrip .d.today b,.wstrip .d.today span{color:#fff}
+  /* ── cards ── */
+  .card{background:var(--surface);border:1px solid var(--ring);border-radius:20px;margin:14px 16px;padding:18px}
+  .sec{color:var(--muted);font-size:.8rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase}
+  h2{font-size:1.12rem;margin-top:2px;font-weight:800}
+  .step-head{display:flex;justify-content:space-between;align-items:center;gap:12px}
+  .step-sum{display:none;align-items:center;gap:10px;cursor:pointer}
+  .step-sum .ok{width:30px;height:30px;border-radius:50%;background:var(--teal);color:#04121c;
+                display:flex;align-items:center;justify-content:center;font-weight:900;flex-shrink:0}
+  .step-sum .t{font-weight:700}
+  .step-sum .s{color:var(--muted);font-size:.88rem}
+  .collapsed .step-body{display:none}
+  .collapsed .step-sum{display:flex}
+  .collapsed h2.step-title,.collapsed .step-title-sec{display:none}
+  /* ── 訓練清單（圓形打勾） ── */
+  .done-label{color:var(--teal);font-size:.9rem;font-weight:700}
+  .ex{display:flex;gap:14px;align-items:flex-start;padding:14px 0;border-bottom:1px solid var(--line)}
   .ex:last-child{border-bottom:none}
-  .ex input[type=checkbox]{width:28px;height:28px;margin-top:4px;accent-color:var(--good);flex-shrink:0}
-  .ex .n{font-weight:700;font-size:1.08rem}
-  .ex .m{color:var(--ink2);font-size:.95rem;margin-top:2px}
-  .ex .c{color:var(--muted);font-size:.9rem;margin-top:3px}
+  .ex input[type=checkbox]{appearance:none;-webkit-appearance:none;width:27px;height:27px;margin-top:4px;
+      border:2px solid var(--muted);border-radius:50%;flex-shrink:0;position:relative;background:transparent}
+  .ex input[type=checkbox]:checked{background:var(--teal);border-color:var(--teal)}
+  .ex input[type=checkbox]:checked::after{content:'✓';color:#04121c;position:absolute;inset:0;
+      display:flex;align-items:center;justify-content:center;font-weight:900;font-size:16px}
+  .ex .n{font-weight:700;font-size:1.05rem}
+  .ex .m{color:var(--ink2);font-size:.92rem;margin-top:2px}
+  .ex .c{color:var(--muted);font-size:.88rem;margin-top:3px}
   .ex.done .n{color:var(--muted);text-decoration:line-through}
-  .prog{height:12px;background:var(--grid);border-radius:6px;overflow:hidden;margin-top:14px}
-  .prog>div{height:100%;background:linear-gradient(90deg,var(--good),#7ce8ab);border-radius:6px;transition:width .3s}
-  .progTxt{color:var(--good);font-weight:700;font-size:.95rem;margin-top:6px}
-  .cheer{display:none;text-align:center;padding:16px;color:var(--good);font-weight:800;font-size:1.15rem}
-  .tiles{display:flex;gap:10px;margin:0 16px}
-  .tile{flex:1;background:var(--surface);border:1px solid var(--ring);border-radius:18px;padding:14px}
-  .tile .v{font-size:1.8rem;font-weight:800}
-  .tile .l{color:var(--muted);font-size:.85rem}
-  .tile .d{font-size:.88rem;color:var(--good);font-weight:700}
-  label{display:block;color:var(--ink2);font-size:.95rem;margin:12px 0 5px;font-weight:600}
+  .ringwrap{position:relative;width:64px;height:64px;flex-shrink:0}
+  .ringwrap svg{transform:rotate(-90deg)}
+  .ringwrap .pct{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+                 font-weight:800;font-size:.92rem;color:var(--teal)}
+  .cheer{display:none;text-align:center;padding:14px;color:var(--teal);font-weight:800;font-size:1.12rem}
+  .quote{color:var(--ink2);font-size:1rem;font-weight:600;border-left:4px solid var(--orange);
+         padding-left:12px;margin:14px 16px;line-height:1.55}
+  /* ── 表單 ── */
+  label{display:block;color:var(--ink2);font-size:.92rem;margin:12px 0 5px;font-weight:600}
   input[type=number],input[type=date],input[type=text],select{
-    width:100%;background:var(--page);color:var(--ink);border:1px solid var(--axis);
-    border-radius:12px;padding:13px 14px;font-size:1.05rem}
+    width:100%;background:var(--page);color:var(--ink);border:1px solid var(--line);
+    border-radius:14px;padding:13px 14px;font-size:1.05rem}
   .row{display:flex;gap:10px}.row>*{flex:1}
-  button{background:linear-gradient(135deg,var(--acc),#ff5f6d);color:#fff;border:none;border-radius:12px;
-         padding:15px 16px;font-size:1.08rem;font-weight:700;width:100%;margin-top:14px}
-  button.ghost{background:transparent;border:1px solid var(--axis);color:var(--ink2)}
+  button{background:var(--blue);color:#fff;border:none;border-radius:99px;
+         padding:15px 16px;font-size:1.05rem;font-weight:700;width:100%;margin-top:14px}
+  button.send{background:var(--teal);color:#04121c}
+  button.ghost{background:transparent;border:1px solid var(--line);color:var(--ink2)}
   .seg{display:flex;gap:8px}
-  .seg button{margin:0;padding:10px 4px;background:var(--page);border:1px solid var(--axis);
-              color:var(--ink2);font-size:1rem;border-radius:12px;flex:1}
-  .seg button span{display:block;font-size:.75rem;color:var(--muted);font-weight:600}
-  .seg button.on{background:linear-gradient(135deg,var(--acc),#ff5f6d);border-color:transparent;color:#fff}
-  .seg button.on span{color:#ffe3cc}
-  nav{position:fixed;bottom:0;left:0;right:0;display:flex;background:var(--surface);
-      border-top:1px solid var(--ring);padding-bottom:env(safe-area-inset-bottom)}
-  nav button{background:none;border:none;border-radius:0;color:var(--muted);font-size:.85rem;
-             padding:11px 0;margin:0;font-weight:700}
-  nav button.on{color:var(--acc)}
-  nav button .ico{display:block;font-size:1.45rem}
-  .page{display:none}.page.on{display:block}
-  h2{font-size:1.15rem;margin-bottom:8px;font-weight:800}
-  .legend{display:flex;gap:16px;font-size:.88rem;color:var(--ink2);margin:6px 0}
+  .seg button{margin:0;padding:10px 4px;background:var(--page);border:1px solid var(--line);
+              color:var(--ink2);font-size:.98rem;border-radius:16px;flex:1}
+  .seg button span{display:block;font-size:.72rem;color:var(--muted);font-weight:600}
+  .seg button.on{background:var(--blue);border-color:var(--blue);color:#fff}
+  .seg button.on span{color:#dbeafe}
+  /* ── tiles / chart / table ── */
+  .tiles{display:flex;gap:10px;margin:0 16px}
+  .tile{flex:1;background:var(--surface);border:1px solid var(--ring);border-radius:20px;padding:14px}
+  .tile .v{font-size:1.7rem;font-weight:800}
+  .tile .l{color:var(--muted);font-size:.82rem}
+  .tile .d{font-size:.86rem;color:var(--teal);font-weight:700}
+  .legend{display:flex;gap:16px;font-size:.86rem;color:var(--ink2);margin:6px 0}
   .legend i{display:inline-block;width:14px;height:3px;border-radius:2px;vertical-align:middle;margin-right:5px}
   svg text{font-family:inherit}
-  table{width:100%;border-collapse:collapse;font-size:.95rem}
-  td,th{padding:9px 4px;border-bottom:1px solid var(--grid);text-align:left}
-  th{color:var(--muted);font-weight:700;font-size:.85rem}
+  table{width:100%;border-collapse:collapse;font-size:.94rem}
+  td,th{padding:9px 4px;border-bottom:1px solid var(--line);text-align:left}
+  th{color:var(--muted);font-weight:700;font-size:.83rem}
   td.num{font-variant-numeric:tabular-nums}
-  .tip{position:absolute;background:var(--page);border:1px solid var(--axis);border-radius:8px;
-       padding:6px 10px;font-size:.85rem;pointer-events:none;display:none;white-space:nowrap;z-index:5}
-  .wk{color:var(--muted);font-size:.88rem;margin-top:8px}
-  .hint{color:var(--muted);font-size:.88rem;margin-top:8px}
+  .tip{position:absolute;background:var(--page);border:1px solid var(--line);border-radius:10px;
+       padding:6px 10px;font-size:.84rem;pointer-events:none;display:none;white-space:nowrap;z-index:5}
+  .wk{color:var(--muted);font-size:.86rem;margin-top:8px}
+  .hint{color:var(--muted);font-size:.86rem;margin-top:8px}
+  /* ── nav ── */
+  nav{position:fixed;bottom:0;left:0;right:0;display:flex;background:rgba(13,18,28,.92);backdrop-filter:blur(10px);
+      border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom)}
+  nav button{background:none;border:none;border-radius:0;color:var(--muted);font-size:.82rem;
+             padding:10px 0;margin:0;font-weight:700}
+  nav button.on{color:var(--blue)}
+  nav button .ico{display:block;font-size:1.4rem}
+  .page{display:none}.page.on{display:block}
 </style>
 </head>
 <body>
-<div class="hero">
+<header>
   <div class="hi" id="hGreet">今日訓練</div>
   <div class="date" id="hDate"></div>
-  <div class="badges" id="phaseBadges"></div>
-  <div class="streak" id="streak"></div>
-</div>
+  <div class="meta"><span id="phaseBadges"></span><span class="badge streak" id="streak"></span></div>
+</header>
 
 <!-- ═══ 今日 ═══ -->
 <div class="page on" id="pgToday">
+  <div class="wstrip" id="wstrip"></div>
+
+  <!-- Step 1 晨間紀錄 -->
+  <div class="card" id="card1">
+    <div class="step-sum" onclick="toggleStep1()">
+      <div class="ok">✓</div>
+      <div><div class="t">Step 1 晨間紀錄 完成</div><div class="s" id="step1Sum"></div></div>
+    </div>
+    <div class="sec step-title-sec">Step 1</div>
+    <h2 class="step-title">晨間紀錄</h2>
+    <div class="step-body">
+      <label>體重 kg</label><input type="number" id="inW" step="0.1" inputmode="decimal" placeholder="70.0">
+      <label>昨晚睡眠（90 分鐘一個循環）</label>
+      <div class="seg" id="segS">
+        <button type="button" onclick="setSleep(3,this)">😴 優<span>≥7.5h（5循環）</span></button>
+        <button type="button" onclick="setSleep(2,this)">🙂 普<span>6–7.5h（4循環）</span></button>
+        <button type="button" onclick="setSleep(1,this)">😪 差<span>&lt;6h</span></button>
+      </div>
+      <div class="row">
+        <div><label>腰圍 cm（週日）</label><input type="number" id="inWa" step="0.5" inputmode="decimal" placeholder="選填"></div>
+        <div><label>備註</label><input type="text" id="inN" placeholder="痛點/狀態"></div>
+      </div>
+      <button onclick="saveLog()">儲存今日紀錄</button>
+      <div class="hint">定好起床時間往回推 5 個循環＋15 分入睡緩衝＝就寢時間。睡「差」的日子：晨間 HIIT 跳過、肌力每動作少 1 組。</div>
+    </div>
+  </div>
+
+  <!-- Step 2 今日訓練 -->
   <div class="card">
-    <h2 id="wName"></h2>
+    <div class="step-head">
+      <div><div class="sec">Step 2</div><h2 id="wName"></h2>
+        <div class="done-label" id="progTxt"></div></div>
+      <div class="ringwrap">
+        <svg width="64" height="64"><circle cx="32" cy="32" r="27" fill="none" stroke="var(--line)" stroke-width="7"/>
+        <circle id="ringFg" cx="32" cy="32" r="27" fill="none" stroke="var(--teal)" stroke-width="7"
+                stroke-linecap="round" stroke-dasharray="169.6" stroke-dashoffset="169.6"/></svg>
+        <div class="pct" id="ringPct">0%</div>
+      </div>
+    </div>
     <div id="wNote" class="hint"></div>
     <div id="exList"></div>
-    <div class="prog"><div id="progBar" style="width:0%"></div></div>
-    <div class="progTxt" id="progTxt"></div>
     <div class="cheer" id="cheer">🎉 今日課表完成！你又比昨天的自己強了一點 💪</div>
-    <div class="quote" id="quote"></div>
-  </div>
-  <div class="card">
-    <h2>快速記錄</h2>
-    <label>體重 kg</label><input type="number" id="inW" step="0.1" inputmode="decimal" placeholder="70.0">
-    <label>昨晚睡眠（90 分鐘一個循環）</label>
-    <div class="seg" id="segS">
-      <button type="button" onclick="setSleep(3,this)">😴 優<span>≥7.5h（5循環）</span></button>
-      <button type="button" onclick="setSleep(2,this)">🙂 普<span>6–7.5h（4循環）</span></button>
-      <button type="button" onclick="setSleep(1,this)">😪 差<span>&lt;6h</span></button>
-    </div>
-    <div class="hint">定好起床時間往回推 5 個循環＋15 分入睡緩衝＝就寢時間。睡「差」的日子：晨間 HIIT 跳過、肌力照練但每動作少 1 組。</div>
-    <div class="row">
-      <div><label>腰圍 cm（週日量）</label><input type="number" id="inWa" step="0.5" inputmode="decimal" placeholder="選填"></div>
-      <div><label>備註</label><input type="text" id="inN" placeholder="痛點/狀態"></div>
-    </div>
-    <button onclick="saveLog()">儲存今日紀錄</button>
+    <button class="send" id="btnSend" onclick="sendToday()">📤 送出今日資料（晨間紀錄＋訓練打勾 → Obsidian）</button>
     <div class="hint" id="saveMsg"></div>
   </div>
+
+  <div class="quote" id="quote"></div>
 </div>
 
 <!-- ═══ 趨勢 ═══ -->
@@ -123,10 +173,10 @@
     <div class="tile"><div class="v" id="tWk">—</div><div class="l">本週訓練</div></div>
   </div>
   <div class="card" style="position:relative">
-    <h2>體重趨勢</h2>
+    <div class="sec">Progress</div><h2>體重趨勢</h2>
     <div class="legend">
-      <span><i style="background:var(--s1l);height:8px;width:8px;border-radius:50%"></i>每日</span>
-      <span><i style="background:var(--s1)"></i>7 天平均</span>
+      <span><i style="background:var(--blueL);height:8px;width:8px;border-radius:50%"></i>每日</span>
+      <span><i style="background:var(--blue)"></i>7 天平均</span>
       <span style="color:var(--muted)">- - 目標 60</span>
     </div>
     <svg id="chart" width="100%" height="230" role="img" aria-label="體重趨勢圖，數據見下表"></svg>
@@ -136,7 +186,6 @@
     <h2>紀錄（同圖表數據）</h2>
     <table id="logTable"><thead><tr><th>日期</th><th>體重</th><th>睡眠</th><th>腰圍</th><th>訓練</th></tr></thead><tbody></tbody></table>
     <button class="ghost" onclick="copyCSV()">📋 複製全部 CSV（給 AI 分析）</button>
-    <button class="ghost" onclick="toObsidian()">📥 今日一行回寫 Obsidian</button>
   </div>
 </div>
 
@@ -236,13 +285,14 @@ const QUOTES=[
 /* ── 狀態 ── */
 const LS=localStorage;
 const cfg=JSON.parse(LS.getItem('cfg')||'{"start":"2026-07-06","vault":"StanleyInbox","path":"健身日誌.md"}');
-const logs=JSON.parse(LS.getItem('logs')||'{}');   // {date:{w,s,wa,n,done,workout}}
+const logs=JSON.parse(LS.getItem('logs')||'{}');   // {date:{w,s,wa,n,done,workout,sent}}
 const today=new Date(); today.setHours(0,0,0,0);
 const iso=d=>d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); // 本地時區，避免 UTC 差一天
 const TD=iso(today);
 function weekOf(d){const s=new Date(cfg.start+'T00:00:00');return Math.floor((d-s)/6048e5)+1}
 const wk=weekOf(today), dow=today.getDay();
 const isDeload=w=>w>0&&w%4===0;
+const SLPT={3:'😴 優',2:'🙂 普',1:'😪 差'};
 
 /* ── 今日頁 ── */
 function dayKeys(w,dw){return schedule(Math.max(w,1))[dw]}
@@ -253,15 +303,37 @@ function streak(){
   while(active(iso(d))){n++;d.setDate(d.getDate()-1)}
   return n;
 }
+const DOWCH=['日','一','二','三','四','五','六'];
+const TAG={A:'肌力',B:'肌力',M:'保養',L1:'下肢',U1:'上肢',L2:'下肢',U2:'上肢',WALK:'快走',LISS:'有氧',REST:'休'};
+function renderStrip(){
+  const mon=new Date(today);mon.setDate(mon.getDate()-((dow+6)%7));
+  let h='';
+  for(let i=0;i<7;i++){
+    const d=new Date(+mon+i*864e5), key=dayKeys(weekOf(d),d.getDay())[0];
+    h+='<div class="d'+(iso(d)===TD?' today':'')+'">'+DOWCH[d.getDay()]+'<b>'+d.getDate()+'</b><span>'+(TAG[key]||'')+'</span></div>';
+  }
+  document.getElementById('wstrip').innerHTML=h;
+}
+let step1Open=null; // null=自動判斷
+function morningDone(){const l=logs[TD]||{};return !!(l.w||l.s)}
+function toggleStep1(){step1Open=true;renderStep1()}
+function renderStep1(){
+  const done=morningDone(), open=step1Open===null?!done:step1Open;
+  const card=document.getElementById('card1');
+  card.className='card'+((done&&!open)?' collapsed':'');
+  const l=logs[TD]||{};
+  document.getElementById('step1Sum').textContent=((l.w?l.w+' kg':'')+(l.s?'・'+SLPT[l.s]:'')||'')+'（點我展開修改）';
+}
 function renderToday(){
   const h=new Date().getHours();
-  document.getElementById('hGreet').textContent=h<11?'早安！今天也來變強 💪':h<18?'午安！保持節奏 ⚡':'晚上好！練起來 🔥';
+  document.getElementById('hGreet').textContent=h<11?'早安！今天也來變強 👋':h<18?'午安！保持節奏 ⚡':'晚上好！練起來 🔥';
   document.getElementById('hDate').textContent=today.toLocaleDateString('zh-TW',{month:'long',day:'numeric',weekday:'long'});
   const sk=streak();
-  document.getElementById('streak').textContent=sk>0?'🔥 連續活躍 '+sk+' 天':'✨ 今天就是第 1 天';
+  document.getElementById('streak').textContent=sk>0?'🔥 連續 '+sk+' 天':'✨ 第 1 天';
   const badges=document.getElementById('phaseBadges');
   if(wk<1){badges.innerHTML='<span class="badge">計畫 '+cfg.start+' 開跑</span>';}
   else badges.innerHTML='<span class="badge">第 '+wk+' 週｜'+PHASE(wk)+'</span>'+(isDeload(wk)?'<span class="badge deload">🔋 減量週</span>':'');
+  renderStrip(); renderStep1();
   const keys=dayKeys(wk,dow);
   document.getElementById('wName').textContent=keys.map(k=>W[k].name).join(' ');
   document.getElementById('wNote').textContent=isDeload(wk)&&keys[0]!=='REST'?'減量週：全動作組數減半、阻力 −20%、RPE ≤6。照做，這是計畫的一部分。':'暖身：最偉大拉伸×3 → 開始。收操：瑜珈舒緩 10 分。';
@@ -275,10 +347,12 @@ function renderToday(){
     div.innerHTML='<input type="checkbox" '+(d?'checked':'')+' onchange="tick(\''+id+'\',this.checked)"><div><div class="n">'+e.n+'</div><div class="m">'+e.m+'</div><div class="c">💡 '+e.c+'</div></div>';
     list.appendChild(div);
   });
-  const done=items.filter(i=>st[i]).length;
-  document.getElementById('progBar').style.width=items.length?100*done/items.length+'%':'0%';
-  document.getElementById('progTxt').textContent=items.length?('完成 '+done+' / '+items.length+(done>0&&done<items.length?'，讚，繼續！':'')):'';
+  const done=items.filter(i=>st[i]).length, pct=items.length?Math.round(100*done/items.length):0;
+  document.getElementById('progTxt').textContent=items.length?done+' / '+items.length+' 完成':'';
+  document.getElementById('ringPct').textContent=pct+'%';
+  document.getElementById('ringFg').setAttribute('stroke-dashoffset',String(169.6*(1-pct/100)));
   document.getElementById('cheer').style.display=(items.length&&done===items.length)?'block':'none';
+  document.getElementById('btnSend').textContent=(logs[TD]&&logs[TD].sent)?'✅ 已送出（再按會重送最新狀態）':'📤 送出今日資料（晨間紀錄＋訓練打勾 → Obsidian）';
   const q=QUOTES[(today.getDate()+today.getMonth())%QUOTES.length];
   document.getElementById('quote').textContent='💬 '+q;
 }
@@ -302,8 +376,20 @@ function saveLog(){
   if(g('inN'))logs[TD].n=g('inN');
   logs[TD].workout=logs[TD].workout||dayKeys(wk,dow).join('+');
   LS.setItem('logs',JSON.stringify(logs));
-  document.getElementById('saveMsg').textContent='✅ 已存（'+TD+'）。資料只在這支手機上，記得定期「複製 CSV」備份。';
-  renderTrend();
+  step1Open=false;
+  document.getElementById('saveMsg').textContent='✅ 晨間紀錄已存。練完打勾後按上面的「送出今日資料」。';
+  renderToday();renderTrend();
+}
+function sendToday(){
+  const l=logs[TD]||{};
+  const keys=dayKeys(wk,dow);
+  let items=[];keys.forEach(k=>items=items.concat(W[k].ex));
+  const done=items.filter(i=>l.done&&l.done[i]).length;
+  const note=((l.n||'')+(items.length?(' 完成'+done+'/'+items.length):'')).trim();
+  const line=[TD,l.w||'',(l.workout||keys.join('+')),l.s||'',l.wa||'',note].join(',');
+  logs[TD]=l;l.sent=true;LS.setItem('logs',JSON.stringify(logs));
+  renderToday();
+  location.href='obsidian://adv-uri?vault='+encodeURIComponent(cfg.vault)+'&filepath='+encodeURIComponent(cfg.path)+'&data='+encodeURIComponent(line)+'&mode=append';
 }
 /* ── 趨勢頁 ── */
 function series(){
@@ -318,9 +404,8 @@ let pts=[];
 function renderTrend(){
   const s=series();
   const tb=document.querySelector('#logTable tbody');tb.innerHTML='';
-  const SLP={3:'😴 優',2:'🙂 普',1:'😪 差'};
   Object.keys(logs).sort().reverse().slice(0,30).forEach(d=>{const l=logs[d];
-    tb.insertAdjacentHTML('beforeend','<tr><td class="num">'+d.slice(5)+'</td><td class="num">'+(l.w||'—')+'</td><td>'+(SLP[l.s]||'—')+'</td><td class="num">'+(l.wa||'—')+'</td><td>'+(l.done&&Object.values(l.done).some(Boolean)?'✅':'—')+'</td></tr>');});
+    tb.insertAdjacentHTML('beforeend','<tr><td class="num">'+d.slice(5)+'</td><td class="num">'+(l.w||'—')+'</td><td>'+(SLPT[l.s]||'—')+'</td><td class="num">'+(l.wa||'—')+'</td><td>'+(l.done&&Object.values(l.done).some(Boolean)?'✅':'—')+'</td></tr>');});
   const a7=s.length?avg7(s,s.length-1):null;
   document.getElementById('tAvg').textContent=a7?a7.toFixed(1):'—';
   document.getElementById('tGoal').textContent=a7?(a7-60).toFixed(1):'—';
@@ -336,7 +421,7 @@ function renderTrend(){
 function drawChart(s){
   const svg=document.getElementById('chart');const Wd=svg.clientWidth||340,H=230,P={l:34,r:10,t:10,b:22};
   svg.setAttribute('viewBox','0 0 '+Wd+' '+H);svg.innerHTML='';pts=[];
-  if(s.length<2){svg.innerHTML='<text x="'+Wd/2+'" y="110" fill="#898781" text-anchor="middle" font-size="13">記錄 2 天以上就會出現趨勢線</text>';return}
+  if(s.length<2){svg.innerHTML='<text x="'+Wd/2+'" y="110" fill="#6b7488" text-anchor="middle" font-size="13">記錄 2 天以上就會出現趨勢線</text>';return}
   const xs=s.map(p=>+new Date(p.d+'T00:00:00'));
   const ys=s.map(p=>p.w).concat(s.map((_,i)=>avg7(s,i))).concat([60]);
   const x0=Math.min(...xs),x1=Math.max(...xs);
@@ -344,11 +429,11 @@ function drawChart(s){
   const X=v=>P.l+(Wd-P.l-P.r)*(x1===x0?0.5:(v-x0)/(x1-x0));
   const Y=v=>P.t+(H-P.t-P.b)*(1-(v-y0)/(y1-y0));
   let g='';
-  for(let v=Math.ceil(y0);v<=y1;v++){g+='<line x1="'+P.l+'" x2="'+(Wd-P.r)+'" y1="'+Y(v)+'" y2="'+Y(v)+'" stroke="var(--grid)" stroke-width="1"/><text x="'+(P.l-6)+'" y="'+(Y(v)+4)+'" fill="var(--muted)" font-size="10" text-anchor="end">'+v+'</text>';}
+  for(let v=Math.ceil(y0);v<=y1;v++){g+='<line x1="'+P.l+'" x2="'+(Wd-P.r)+'" y1="'+Y(v)+'" y2="'+Y(v)+'" stroke="var(--line)" stroke-width="1"/><text x="'+(P.l-6)+'" y="'+(Y(v)+4)+'" fill="var(--muted)" font-size="10" text-anchor="end">'+v+'</text>';}
   g+='<line x1="'+P.l+'" x2="'+(Wd-P.r)+'" y1="'+Y(60)+'" y2="'+Y(60)+'" stroke="var(--muted)" stroke-width="1" stroke-dasharray="4 4"/>';
   s.forEach((p,i)=>{pts.push({x:X(xs[i]),y:Y(p.w),d:p.d,w:p.w,a:avg7(s,i)});});
-  g+=pts.map(p=>'<circle cx="'+p.x+'" cy="'+p.y+'" r="3.5" fill="var(--s1l)"/>').join('');
-  g+='<path d="'+pts.map((p,i)=>(i?'L':'M')+p.x+' '+Y(p.a)).join('')+'" fill="none" stroke="var(--s1)" stroke-width="2" stroke-linejoin="round"/>';
+  g+=pts.map(p=>'<circle cx="'+p.x+'" cy="'+p.y+'" r="3.5" fill="var(--blueL)"/>').join('');
+  g+='<path d="'+pts.map((p,i)=>(i?'L':'M')+p.x+' '+Y(p.a)).join('')+'" fill="none" stroke="var(--blue)" stroke-width="2" stroke-linejoin="round"/>';
   const last=pts[pts.length-1];
   g+='<text x="'+(last.x-4)+'" y="'+(Y(last.a)-8)+'" fill="var(--ink2)" font-size="11" text-anchor="end">'+last.a.toFixed(1)+'</text>';
   const d0=s[0].d.slice(5),d1=s[s.length-1].d.slice(5);
@@ -374,12 +459,7 @@ function csv(){
     out+=[d,l.w||'',l.workout||'',l.s||'',l.wa||'',(l.n||'').replace(/,/g,'；')].join(',')+'\n';});
   return out;
 }
-function copyCSV(){navigator.clipboard.writeText(csv()).then(()=>alert('已複製 '+Object.keys(logs).length+' 天紀錄。貼給 Claude 分析，或貼進 Obsidian 備份。'))}
-function toObsidian(){
-  const l=logs[TD]||{};
-  const line=[TD,l.w||'',l.workout||dayKeys(wk,dow).join('+'),l.s||'',l.wa||'',l.n||''].join(',');
-  location.href='obsidian://adv-uri?vault='+encodeURIComponent(cfg.vault)+'&filepath='+encodeURIComponent(cfg.path)+'&data='+encodeURIComponent(line)+'&mode=append';
-}
+function copyCSV(){navigator.clipboard.writeText(csv()).then(()=>alert('已複製 '+Object.keys(logs).length+' 天紀錄。貼給 Claude 分析，或貼進健身日誌備份。'))}
 /* ── 課表頁 / 設定 ── */
 function renderPlan(){
   const w=+document.getElementById('inWk').value||Math.max(wk,1);
