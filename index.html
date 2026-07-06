@@ -225,7 +225,7 @@
     <label>計畫開始日（W1 週一）</label><input type="date" id="inStart" onchange="saveCfg()">
     <label>Obsidian vault 名稱</label><input type="text" id="inVault" onchange="saveCfg()">
     <label>日誌檔路徑</label><input type="text" id="inPath" onchange="saveCfg()">
-    <div class="hint">完整計畫文件（動作導引卡＋教學影片＋營養）在 Obsidian 待看夾與 StanleyBrain repo。</div>
+    <div class="hint">完整計畫文件（動作導引卡＋教學影片＋營養）在 Obsidian 待看夾與 StanleyBrain repo。前三月徒手＋彈力繩在家做，第 4 個月起接喬山 Torus 5。</div>
   </div>
 </div>
 
@@ -260,6 +260,9 @@ const EX = {
   lr:{n:'彈力繩側平舉（拇指朝上）',m:'3×12–15｜RPE6｜休45s',c:'肩胛平面、舉到肩高即可'},
   td:{n:'滑輪三頭下壓',m:'3×12｜RPE6–7｜休45s',c:'手肘釘在身側'},
   bc:{n:'二頭彎舉（低滑輪/彈力繩）',m:'3×12｜RPE6–7｜休45s',c:'手肘不前移'},
+  bp:{n:'彈力繩站姿胸推',m:'3×10–12｜RPE6–7｜3-1-1｜休75s',c:'肩胛後收下沉；沿胸線推遠、肩前側痛換低磅數繩'},
+  br:{n:'彈力繩坐姿划船',m:'3×10–12｜RPE6–7｜2-1-2｜休75s',c:'手肘往後口袋插；上身像釘住的門柱'},
+  bpd:{n:'彈力繩跪姿下拉',m:'3×10–12｜RPE6–7｜2-1-2｜休75s',c:'手肘往骨盆拉；手掌只是鉤子'},
   walk:{n:'快走',m:'30–40 分',c:'能講話但不能唱歌的速度'},
   liss:{n:'LISS 快走',m:'45–60 分',c:'脂肪氧化主場，戴耳機聽 podcast'},
   yoga:{n:'瑜珈舒緩＋量測日',m:'腰圍＋照片＋看七天均重',c:'讓身體休一天'},
@@ -288,10 +291,13 @@ const G = {
  lr:{s:"①雙腳踩繩、雙手持繩於身側 ②拇指微朝上、沿肩胛平面（前開30°）舉起 ③到肩高即停 ④2秒慢放",e:"聳肩→「肩胛沉住、只有手臂動」；舉過肩高→「到肩膀高度就好」",r:"退階：減磅數、單手扶牆｜進階：加磅數、頂端停1秒",v:[["🇹🇼 提升三角肌訓練成效三方法｜大腦優先教練學院","https://www.youtube.com/watch?v=VWEnVd7v8Os"],["🇺🇸 Lateral Raise Technique｜Renaissance Periodization","https://www.youtube.com/watch?v=n5dsI9qQXwY"]]},
  td:{s:"①面對高滑輪、握繩兩端 ②手肘釘在身側 ③前臂下壓至伸直 ④2秒慢回到前臂水平",e:"手肘前移→「手肘黏在肋骨旁」；聳肩→「肩胛沉住」",r:"退階：減配重｜進階：加配重、底端停1秒",v:[["🇹🇼 二頭肌三頭肌機械完整教學｜大腦優先教練學院","https://www.youtube.com/watch?v=qiYAjdOW2t4"],["🇺🇸 Huge Triceps 技術詳解｜Jeff Nippard","https://www.youtube.com/watch?v=popGXI-qs98"]]},
  bc:{s:"①低滑輪或踩繩、掌心朝前握把 ②手肘釘在身側 ③彎舉至前臂近垂直 ④3秒慢放",e:"手肘前移借力→「手肘不動、只有前臂畫弧」；甩腰→「核心收住」",r:"退階：減磅數｜進階：加磅數、慢放4秒",v:[["🇹🇼 二頭肌三頭肌機械完整教學｜大腦優先教練學院","https://www.youtube.com/watch?v=qiYAjdOW2t4"]]},
+ bp:{s:"①彈力繩繞過上背、腋下高度，雙手握兩端於胸側 ②肩胛後收下沉 ③吐氣沿胸線往前推出（手肘不鎖死）④3秒慢回",e:"聳肩→「肩膀離耳朵遠一點」；肩前側痛→縮小範圍、手肘貼身45°、換低磅數繩",r:"退階：更輕的繩、坐姿推｜進階：加磅數、離心4秒；第4個月接喬山 Torus 5 坐姿胸推（影片為機器版動作模式參考）",v:[["🇹🇼 坐姿胸推機動作模式參考｜United Fitness","https://www.youtube.com/watch?v=Q5sY1hyAHbU"],["🇺🇸 Get The Most Out Of Chest Machines｜Renaissance Periodization","https://www.youtube.com/watch?v=SUdQ1roIWz0"]]},
+ br:{s:"①坐地、雙腳前伸勾住彈力繩，雙手握兩端 ②胸口微挺、先肩胛後收啟動 ③手肘沿身側向後拉 ④2秒慢回",e:"聳肩→「肩胛往下再往後」；後仰借力→「上身像釘住的門柱」",r:"退階：更輕的繩｜進階：加磅數、頂端停2秒；第4個月接喬山 Torus 5 坐姿划船",v:[["🇹🇼 坐姿划船機動作模式參考｜United Fitness","https://www.youtube.com/watch?v=oPnhHSy0Eww"],["🇺🇸 Improve Your Machine Rows｜Renaissance Periodization","https://www.youtube.com/watch?v=5XfV6hvcxCE"]]},
+ bpd:{s:"①彈力繩固定於高處、跪姿雙手握兩端 ②胸口微挺 ③手肘往骨盆方向下拉至繩近鎖骨 ④2秒慢回",e:"往後躺硬拉→「上身固定、只有手臂下拉」；手臂主導→「想像手掌只是鉤子」",r:"退階：更輕的繩、站姿直臂下壓｜進階：加磅數、頂端停1秒；第4個月接喬山 Torus 5 滑輪下拉",v:[["🇹🇼 滑輪下拉動作模式參考｜大腦優先教練學院","https://www.youtube.com/watch?v=U6VJCl0CRno"],["🇺🇸 Improve Your Lat Pulldown｜Renaissance Periodization","https://www.youtube.com/watch?v=VXKfH6ciEBI"]]},
 };
 const W = {
-  A:{name:'肌力 A｜蹲＋水平推拉（45分）',ex:['sq','cp','rw','rdl','fp','db']},
-  B:{name:'肌力 B｜髖＋垂直拉（45分）',ex:['gb','lp','ip','pp','er','bd']},
+  A:{name:'肌力 A｜蹲＋水平推拉（45分）',ex:['sq','bp','br','rdl','fp','db']},
+  B:{name:'肌力 B｜髖＋垂直拉（45分）',ex:['gb','bpd','ip','pp','er','bd']},
   M:{name:'保養套餐｜護腰護肩（12分）',ex:['mc','spl','bd','er','fp']},
   L1:{name:'下肢 1（45分）',ex:['sq','lc','rdl','spl']},
   U1:{name:'上肢 1｜推主導（45分）',ex:['cp','op','lp','fp']},
@@ -356,6 +362,7 @@ const DOWCH=['日','一','二','三','四','五','六'];
 const BANMAP={A:'strength',B:'strength',M:'core',L1:'lower',L2:'lower',U1:'upper',U2:'upper',
               AB1:'core',AB2:'core',AR1:'upper',AR2:'upper',WALK:'cardio',LISS:'cardio',REST:'recovery'};
 const ICMAP={sq:'squat',ss:'squat',rdl:'hinge',srdl:'hinge',gb:'bridge',cp:'press',ip:'press',
+             bp:'press',br:'row',bpd:'pulldown',
              rw:'row',lp:'pulldown',mc:'core',db:'core',cc:'core',bd:'plank',spl:'plank',
              pp:'antirotation',er:'shoulder',fp:'shoulder',lr:'shoulder',lc:'legcurl',
              td:'arms',bc:'arms',op:'overhead',walk:'walk',liss:'walk',yoga:'rest'};
