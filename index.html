@@ -33,6 +33,14 @@
   .wstrip .d.today b,.wstrip .d.today span{color:#fff}
   .wstrip .d.sel{background:var(--orange);color:#3a2708}
   .wstrip .d.sel b,.wstrip .d.sel span{color:#1d1403}
+  .wstrip .d.did span{color:var(--teal);font-weight:800}
+  #ringFg{transition:stroke-dashoffset .6s ease}
+  .pbar{height:6px;background:var(--surface2);border-radius:99px;margin-top:8px;overflow:hidden}
+  .pbar i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--blue),var(--teal));
+          border-radius:99px;transition:width .8s ease}
+  .confetti{position:fixed;top:-14px;width:9px;height:14px;z-index:99;pointer-events:none;
+            border-radius:2px;animation:cfall linear forwards}
+  @keyframes cfall{to{transform:translateY(105vh) rotate(720deg)}}
   .viewnote{margin:12px 16px -2px;padding:10px 14px;border-radius:14px;background:#2a2413;
             color:#ffd166;font-size:.9rem;font-weight:700;cursor:pointer}
   /* ── cards ── */
@@ -64,7 +72,9 @@
   .ex{display:flex;gap:14px;align-items:flex-start;padding:14px 0;border-bottom:1px solid var(--line)}
   .ex:last-child{border-bottom:none}
   .ex input[type=checkbox]{appearance:none;-webkit-appearance:none;width:27px;height:27px;margin-top:4px;
-      border:2px solid var(--muted);border-radius:50%;flex-shrink:0;position:relative;background:transparent;margin-left:auto}
+      border:2px solid var(--muted);border-radius:50%;flex-shrink:0;position:relative;background:transparent;margin-left:auto;
+      transition:background .2s,border-color .2s,transform .15s}
+  .ex input[type=checkbox]:active{transform:scale(1.2)}
   .ex input[type=checkbox]:checked{background:var(--teal);border-color:var(--teal)}
   .ex input[type=checkbox]:checked::after{content:'✓';color:#04121c;position:absolute;inset:0;
       display:flex;align-items:center;justify-content:center;font-weight:900;font-size:16px}
@@ -200,7 +210,7 @@
 <div class="page" id="pgTrend">
   <div class="tiles">
     <div class="tile"><div class="v" id="tAvg">—</div><div class="l">7 天均重 kg</div><div class="d" id="tAvgD"></div></div>
-    <div class="tile"><div class="v" id="tGoal">—</div><div class="l">距目標 60kg</div></div>
+    <div class="tile"><div class="v" id="tGoal">—</div><div class="l">距目標 60kg</div><div class="pbar"><i id="tGoalBar"></i></div></div>
     <div class="tile"><div class="v" id="tWk">—</div><div class="l">本週訓練</div></div>
   </div>
   <div class="card" style="position:relative">
@@ -216,7 +226,7 @@
   <div class="card">
     <h2>紀錄（同圖表數據）</h2>
     <table id="logTable"><thead><tr><th>日期</th><th>體重</th><th>睡眠</th><th>腰圍</th><th>訓練</th></tr></thead><tbody></tbody></table>
-    <button class="ghost" onclick="copyCSV()">📋 複製全部 CSV（給 AI 分析）</button>
+    <button class="ghost" onclick="copyCSV()">📋 備份全部歷史 CSV（漏送多天／換手機時用）</button>
   </div>
 </div>
 
@@ -387,7 +397,8 @@ function renderStrip(){
   let h='';
   for(let i=0;i<7;i++){
     const d=new Date(+mon+i*864e5), k=iso(d), key=dayKeys(weekOf(d),d.getDay())[0];
-    h+='<div class="d'+(k===TD?' today':'')+(k===VD&&VD!==TD?' sel':'')+'" onclick="setView(\''+k+'\')">'+DOWCH[d.getDay()]+'<b>'+d.getDate()+'</b><span>'+(TAG[key]||'')+'</span></div>';
+    const did=logs[k]&&logs[k].done&&Object.values(logs[k].done).some(Boolean); // 練過的日子蓋勾，一眼看見本週累積
+    h+='<div class="d'+(k===TD?' today':'')+(k===VD&&VD!==TD?' sel':'')+(did?' did':'')+'" onclick="setView(\''+k+'\')">'+DOWCH[d.getDay()]+'<b>'+d.getDate()+'</b><span>'+(did?'✓ ':'')+(TAG[key]||'')+'</span></div>';
   }
   document.getElementById('wstrip').innerHTML=h;
 }
@@ -484,11 +495,20 @@ function setWt(id,v){
   v=v.trim(); if(v)logs[VD].wt[id]=v; else delete logs[VD].wt[id];
   LS.setItem('logs',JSON.stringify(logs)); // 不重繪，避免打字中斷
 }
+function burst(){ // 100% 完成的紙屑慶祝
+  const C=['#2dd4a0','#3b82f6','#ff9f43','#7fb0f9','#ffd166'];
+  for(let i=0;i<44;i++){const e=document.createElement('div');e.className='confetti';
+    e.style.left=Math.random()*100+'vw';e.style.background=C[i%C.length];
+    e.style.animationDuration=(1.6+Math.random()*1.4)+'s';e.style.animationDelay=(Math.random()*.4)+'s';
+    document.body.appendChild(e);setTimeout(()=>e.remove(),3600);}
+}
 function tick(id,v){
   if(VD>TD)return; // 未來日期唯讀
   const vd=vDate();
   logs[VD]=logs[VD]||{};logs[VD].done=logs[VD].done||{};logs[VD].done[id]=v;
   logs[VD].workout=dayKeys(weekOf(vd),vd.getDay()).join('+');
+  const keys=dayKeys(weekOf(vd),vd.getDay());let items=[];keys.forEach(k=>items=items.concat(W[k].ex));
+  if(v&&items.length&&items.every(i=>logs[VD].done[i]))burst();
   LS.setItem('logs',JSON.stringify(logs));renderToday();renderTrend();
 }
 let _sleep=0;
@@ -544,6 +564,8 @@ function renderTrend(){
   const a7=s.length?avg7(s,s.length-1):null;
   document.getElementById('tAvg').textContent=a7?a7.toFixed(1):'—';
   document.getElementById('tGoal').textContent=a7?(a7-60).toFixed(1):'—';
+  const START_W=70; // 計畫起點體重（2026-07-06 開跑）——70→60 的旅程進度條
+  document.getElementById('tGoalBar').style.width=a7?Math.max(0,Math.min(100,100*(START_W-a7)/(START_W-60)))+'%':'0';
   if(s.length>7){const prev=avg7(s,s.length-2);const d=a7-prev;
     document.getElementById('tAvgD').textContent=(d<=0?'↓ ':'↑ ')+Math.abs(d).toFixed(2);}
   const mon=new Date(today);mon.setDate(mon.getDate()-((dow+6)%7));
@@ -558,14 +580,16 @@ function drawChart(s){
   svg.setAttribute('viewBox','0 0 '+Wd+' '+H);svg.innerHTML='';pts=[];
   if(s.length<2){svg.innerHTML='<text x="'+Wd/2+'" y="110" fill="#6b7488" text-anchor="middle" font-size="13">記錄 2 天以上就會出現趨勢線</text>';return}
   const xs=s.map(p=>+new Date(p.d+'T00:00:00'));
-  const ys=s.map(p=>p.w).concat(s.map((_,i)=>avg7(s,i))).concat([60]);
+  /* Y 軸貼合實際資料——不再被目標線 60 壓扁；目標接近入圖範圍才畫線 */
+  const ys=s.map(p=>p.w).concat(s.map((_,i)=>avg7(s,i)));
   const x0=Math.min(...xs),x1=Math.max(...xs);
   let y0=Math.min(...ys)-.5,y1=Math.max(...ys)+.5;
   const X=v=>P.l+(Wd-P.l-P.r)*(x1===x0?0.5:(v-x0)/(x1-x0));
   const Y=v=>P.t+(H-P.t-P.b)*(1-(v-y0)/(y1-y0));
   let g='';
   for(let v=Math.ceil(y0);v<=y1;v++){g+='<line x1="'+P.l+'" x2="'+(Wd-P.r)+'" y1="'+Y(v)+'" y2="'+Y(v)+'" stroke="var(--line)" stroke-width="1"/><text x="'+(P.l-6)+'" y="'+(Y(v)+4)+'" fill="var(--muted)" font-size="10" text-anchor="end">'+v+'</text>';}
-  g+='<line x1="'+P.l+'" x2="'+(Wd-P.r)+'" y1="'+Y(60)+'" y2="'+Y(60)+'" stroke="var(--muted)" stroke-width="1" stroke-dasharray="4 4"/>';
+  if(60>=y0&&60<=y1)g+='<line x1="'+P.l+'" x2="'+(Wd-P.r)+'" y1="'+Y(60)+'" y2="'+Y(60)+'" stroke="var(--muted)" stroke-width="1" stroke-dasharray="4 4"/>';
+  else g+='<text x="'+(Wd-P.r)+'" y="'+(P.t+11)+'" fill="var(--muted)" font-size="11" text-anchor="end">🎯 距 60kg 還 '+(avg7(s,s.length-1)-60).toFixed(1)+' kg</text>';
   s.forEach((p,i)=>{pts.push({x:X(xs[i]),y:Y(p.w),d:p.d,w:p.w,a:avg7(s,i)});});
   g+=pts.map(p=>'<circle cx="'+p.x+'" cy="'+p.y+'" r="3.5" fill="var(--blueL)"/>').join('');
   g+='<path d="'+pts.map((p,i)=>(i?'L':'M')+p.x+' '+Y(p.a)).join('')+'" fill="none" stroke="var(--blue)" stroke-width="2" stroke-linejoin="round"/>';
@@ -595,7 +619,7 @@ function csv(){
     out+=[d,l.w||'',l.workout||'',l.s||'',l.wa||'',(l.n||'').replace(/,/g,'；'),wt].join(',')+'\n';});
   return out;
 }
-function copyCSV(){navigator.clipboard.writeText(csv()).then(()=>{LS.setItem('lastExport',TD);renderToday();alert('已複製 '+Object.keys(logs).length+' 天紀錄。貼給 Claude 分析，或貼進健身日誌備份。')})}
+function copyCSV(){navigator.clipboard.writeText(csv()).then(()=>{LS.setItem('lastExport',TD);renderToday();alert('已複製 '+Object.keys(logs).length+' 天完整紀錄。漏送多天→貼進 Obsidian 健身日誌補齊；換手機→這就是搬家包。')})}
 /* ── 課表頁 / 設定 ── */
 function renderPlan(){
   const w=+document.getElementById('inWk').value||Math.max(wk,1);
