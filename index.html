@@ -26,11 +26,15 @@
   /* 週曆條 */
   .wstrip{display:flex;gap:6px;margin:14px 16px 0}
   .wstrip .d{flex:1;text-align:center;padding:8px 0;border-radius:14px;background:var(--surface);
-             color:var(--muted);font-size:.78rem;line-height:1.35}
+             color:var(--muted);font-size:.78rem;line-height:1.35;cursor:pointer}
   .wstrip .d b{display:block;color:var(--ink2);font-size:1.02rem}
   .wstrip .d span{display:block;font-size:.7rem}
   .wstrip .d.today{background:var(--blue);color:#dbeafe}
   .wstrip .d.today b,.wstrip .d.today span{color:#fff}
+  .wstrip .d.sel{background:var(--orange);color:#3a2708}
+  .wstrip .d.sel b,.wstrip .d.sel span{color:#1d1403}
+  .viewnote{margin:12px 16px -2px;padding:10px 14px;border-radius:14px;background:#2a2413;
+            color:#ffd166;font-size:.9rem;font-weight:700;cursor:pointer}
   /* ── cards ── */
   .card{background:var(--surface);border:1px solid var(--ring);border-radius:20px;margin:14px 16px;padding:18px}
   .sec{color:var(--muted);font-size:.8rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase}
@@ -138,6 +142,7 @@
 <!-- ═══ 今日 ═══ -->
 <div class="page on" id="pgToday">
   <div class="wstrip" id="wstrip"></div>
+  <div class="viewnote" id="viewNote" style="display:none" onclick="setView(TD)"></div>
 
   <!-- Step 1 晨間紀錄 -->
   <div class="card" id="card1">
@@ -159,7 +164,7 @@
         <div><label>腰圍 cm（週日）</label><input type="number" id="inWa" step="0.5" inputmode="decimal" placeholder="選填"></div>
         <div><label>備註</label><input type="text" id="inN" placeholder="痛點/狀態"></div>
       </div>
-      <button onclick="saveLog()">儲存今日紀錄</button>
+      <button id="btnSave" onclick="saveLog()">儲存今日紀錄</button>
       <div class="hint">定好起床時間往回推 5 個循環＋15 分入睡緩衝＝就寢時間。睡「差」的日子：晨間 HIIT 跳過、肌力每動作少 1 組。</div>
     </div>
   </div>
@@ -182,6 +187,7 @@
     <div class="cheer" id="cheer">🎉 今日課表完成！你又比昨天的自己強了一點 💪</div>
     <button class="send" id="btnSend" onclick="sendToday()">📤 送出今日資料（晨間紀錄＋訓練打勾 → Obsidian）</button>
     <div class="hint" id="saveMsg"></div>
+    <div class="hint" id="expHint"></div>
   </div>
 
   <div class="quote" id="quote"></div>
@@ -290,15 +296,17 @@ const G = {
  cc:{s:"①跪在滑輪前、雙手持繩於頭側 ②髖固定不動 ③用腹肌把胸口捲向骨盆 ④慢回、腹肌全程張力",e:"用手拉→「手只是掛繩的鉤子」；髖前後移→「屁股釘在腳跟上方」",r:"退階：減配重｜進階：加配重、頂端停1秒",v:[["🇹🇼 正確的跪姿滑輪捲腹｜Leo Kwan 曜皓教練","https://www.youtube.com/shorts/5Tjwh-8Je68"],["🇺🇸 Six Pack Abs 訓練詳解（含 Cable Crunch）｜Jeff Nippard","https://www.youtube.com/watch?v=1G0y8D5rFDc"]]},
  lr:{s:"①雙腳踩繩、雙手持繩於身側 ②拇指微朝上、沿肩胛平面（前開30°）舉起 ③到肩高即停 ④2秒慢放",e:"聳肩→「肩胛沉住、只有手臂動」；舉過肩高→「到肩膀高度就好」",r:"退階：減磅數、單手扶牆｜進階：加磅數、頂端停1秒",v:[["🇹🇼 提升三角肌訓練成效三方法｜大腦優先教練學院","https://www.youtube.com/watch?v=VWEnVd7v8Os"],["🇺🇸 Lateral Raise Technique｜Renaissance Periodization","https://www.youtube.com/watch?v=n5dsI9qQXwY"]]},
  td:{s:"①面對高滑輪、握繩兩端 ②手肘釘在身側 ③前臂下壓至伸直 ④2秒慢回到前臂水平",e:"手肘前移→「手肘黏在肋骨旁」；聳肩→「肩胛沉住」",r:"退階：減配重｜進階：加配重、底端停1秒",v:[["🇹🇼 二頭肌三頭肌機械完整教學｜大腦優先教練學院","https://www.youtube.com/watch?v=qiYAjdOW2t4"],["🇺🇸 Huge Triceps 技術詳解｜Jeff Nippard","https://www.youtube.com/watch?v=popGXI-qs98"]]},
- bc:{s:"①低滑輪或踩繩、掌心朝前握把 ②手肘釘在身側 ③彎舉至前臂近垂直 ④3秒慢放",e:"手肘前移借力→「手肘不動、只有前臂畫弧」；甩腰→「核心收住」",r:"退階：減磅數｜進階：加磅數、慢放4秒",v:[["🇹🇼 二頭肌三頭肌機械完整教學｜大腦優先教練學院","https://www.youtube.com/watch?v=qiYAjdOW2t4"]]},
- bp:{s:"①彈力繩繞過上背、腋下高度，雙手握兩端於胸側 ②肩胛後收下沉 ③吐氣沿胸線往前推出（手肘不鎖死）④3秒慢回",e:"聳肩→「肩膀離耳朵遠一點」；肩前側痛→縮小範圍、手肘貼身45°、換低磅數繩",r:"退階：更輕的繩、坐姿推｜進階：加磅數、離心4秒；第4個月接喬山 Torus 5 坐姿胸推（影片為機器版動作模式參考）",v:[["🇹🇼 坐姿胸推機動作模式參考｜United Fitness","https://www.youtube.com/watch?v=Q5sY1hyAHbU"],["🇺🇸 Get The Most Out Of Chest Machines｜Renaissance Periodization","https://www.youtube.com/watch?v=SUdQ1roIWz0"]]},
- br:{s:"①坐地、雙腳前伸勾住彈力繩，雙手握兩端 ②胸口微挺、先肩胛後收啟動 ③手肘沿身側向後拉 ④2秒慢回",e:"聳肩→「肩胛往下再往後」；後仰借力→「上身像釘住的門柱」",r:"退階：更輕的繩｜進階：加磅數、頂端停2秒；第4個月接喬山 Torus 5 坐姿划船",v:[["🇹🇼 坐姿划船機動作模式參考｜United Fitness","https://www.youtube.com/watch?v=oPnhHSy0Eww"],["🇺🇸 Improve Your Machine Rows｜Renaissance Periodization","https://www.youtube.com/watch?v=5XfV6hvcxCE"]]},
- bpd:{s:"①彈力繩固定於高處、跪姿雙手握兩端 ②胸口微挺 ③手肘往骨盆方向下拉至繩近鎖骨 ④2秒慢回",e:"往後躺硬拉→「上身固定、只有手臂下拉」；手臂主導→「想像手掌只是鉤子」",r:"退階：更輕的繩、站姿直臂下壓｜進階：加磅數、頂端停1秒；第4個月接喬山 Torus 5 滑輪下拉",v:[["🇹🇼 滑輪下拉動作模式參考｜大腦優先教練學院","https://www.youtube.com/watch?v=U6VJCl0CRno"],["🇺🇸 Improve Your Lat Pulldown｜Renaissance Periodization","https://www.youtube.com/watch?v=VXKfH6ciEBI"]]},
+ bc:{s:"①低滑輪或踩繩、掌心朝前握把 ②手肘釘在身側 ③彎舉至前臂近垂直 ④3秒慢放",e:"手肘前移借力→「手肘不動、只有前臂畫弧」；甩腰→「核心收住」",r:"退階：減磅數｜進階：加磅數、慢放4秒",v:[["🇨🇳 啞鈴彎舉動作模式＋常見錯誤｜卓叔增重","https://www.youtube.com/watch?v=2g4v5qv8ByM"],["🇹🇼 二頭彎舉姿勢矯正｜Kun阿錕","https://www.youtube.com/watch?v=7Xbh_w-EhYA"]]},
+ bp:{s:"①彈力繩繞過上背、腋下高度，雙手握兩端於胸側 ②肩胛後收下沉 ③吐氣沿胸線往前推出（手肘不鎖死）④3秒慢回",e:"聳肩→「肩膀離耳朵遠一點」；肩前側痛→縮小範圍、手肘貼身45°、換低磅數繩",r:"退階：更輕的繩、坐姿推｜進階：加磅數、離心4秒；第4個月接喬山 Torus 5 坐姿胸推",v:[["🇹🇼 彈力繩上半身課表（12:29 起為胸推段）｜FunSport ICE 教練","https://www.youtube.com/watch?v=Rr2xHhCTcmY&t=749s"],["🇺🇸 站姿彈力繩胸推 1 分鐘示範｜Live Lean TV","https://www.youtube.com/watch?v=6-86jEAXA08"]]},
+ br:{s:"①坐地、雙腳前伸勾住彈力繩，雙手握兩端 ②胸口微挺、先肩胛後收啟動 ③手肘沿身側向後拉 ④2秒慢回",e:"聳肩→「肩胛往下再往後」；後仰借力→「上身像釘住的門柱」",r:"退階：更輕的繩｜進階：加磅數、頂端停2秒；第4個月接喬山 Torus 5 坐姿划船",v:[["🇹🇼 彈力帶划船完整教學｜健美女大生","https://www.youtube.com/watch?v=pb3d2qnVrrc"],["🇹🇼 坐姿划船緊實背部｜壯壯老師","https://www.youtube.com/watch?v=boEPSyEIq00"]]},
+ bpd:{s:"①彈力繩固定於高處、跪姿雙手握兩端 ②胸口微挺 ③手肘往骨盆方向下拉至繩近鎖骨 ④2秒慢回",e:"往後躺硬拉→「上身固定、只有手臂下拉」；手臂主導→「想像手掌只是鉤子」",r:"退階：更輕的繩、站姿直臂下壓｜進階：加磅數、頂端停1秒；第4個月接喬山 Torus 5 滑輪下拉",v:[["🇹🇼 彈力繩下拉練背完整教學｜女力健身 Nuli","https://www.youtube.com/watch?v=OhquQspVpIs"],["🇺🇸 居家下拉固定設定＋常見錯誤｜Clench Fitness","https://www.youtube.com/watch?v=BEHY9CwiWPI"]]},
 };
 const W = {
   A:{name:'肌力 A｜蹲＋水平推拉（45分）',ex:['sq','bp','br','rdl','fp','db']},
   B:{name:'肌力 B｜髖＋垂直拉（45分）',ex:['gb','bpd','ip','pp','er','bd']},
   M:{name:'保養套餐｜護腰護肩（12分）',ex:['mc','spl','bd','er','fp']},
+  LOW:{name:'下肢＋核心日（45分）',ex:['sq','rdl','gb','db','pp']},
+  UPP:{name:'上肢推拉日（45分）',ex:['bp','ip','br','bpd','fp','er']},
   L1:{name:'下肢 1（45分）',ex:['sq','lc','rdl','spl']},
   U1:{name:'上肢 1｜推主導（45分）',ex:['cp','op','lp','fp']},
   L2:{name:'下肢 2｜單邊（45分）',ex:['ss','srdl','gb','pp']},
@@ -312,10 +320,11 @@ const W = {
   REST:{name:'休息日',ex:['yoga']},
 };
 /* 週 → 每日課表鍵。dow: 0=日…6=六 */
+/* 肌力日固定二三五（二三接送空檔）：二=下肢、三=上肢（連續兩天不同肌群）、五=全身/交替 */
 function schedule(wk){
-  if(wk<=12) return {1:['A'],2:['M'],3:['B'],4:['M'],5:[wk%2?'A':'B'],6:['WALK'],0:['REST']};
-  if(wk<=24) return {1:['L1'],2:['U1'],3:['REST'],4:['L2'],5:['U2'],6:['WALK'],0:['REST']};
-  return {1:['L1','AB1'],2:['U1','AR1'],3:['REST'],4:['L2','AB2'],5:['U2','AR2'],6:['LISS'],0:['REST']};
+  if(wk<=12) return {1:['M'],2:['LOW'],3:['UPP'],4:['M'],5:[wk%2?'A':'B'],6:['WALK'],0:['REST']};
+  if(wk<=24) return {1:['M'],2:['L1'],3:['U1'],4:['M'],5:[wk%2?'L2':'U2'],6:['WALK'],0:['REST']};
+  return {1:['M'],2:['L1','AB1'],3:['U1','AR1'],4:['M'],5:wk%2?['L2','AB2']:['U2','AR2'],6:['LISS'],0:['REST']};
 }
 const PHASE=w=>w<=12?'基礎鞏固期':w<=24?'肌力累積期':'分化專項期';
 const QUOTES=[
@@ -343,6 +352,9 @@ const logs=JSON.parse(LS.getItem('logs')||'{}');   // {date:{w,s,wa,n,done,worko
 const today=new Date(); today.setHours(0,0,0,0);
 const iso=d=>d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); // 本地時區，避免 UTC 差一天
 const TD=iso(today);
+let VD=TD; // 檢視日期：預設今天，點週曆條切換（今天/過去可補登、未來唯讀預覽）
+const vDate=()=>new Date(VD+'T00:00:00');
+function setView(d){if(d===VD)return;VD=d;step1Open=null;fillStep1();renderToday();}
 function weekOf(d){const s=new Date(cfg.start+'T00:00:00');return Math.floor((d-s)/6048e5)+1}
 const wk=weekOf(today), dow=today.getDay();
 const isDeload=w=>w>0&&w%4===0;
@@ -359,55 +371,71 @@ function streak(){
 }
 const DOWCH=['日','一','二','三','四','五','六'];
 /* 視覺資產對映（img/ 由 draw skill 生成） */
-const BANMAP={A:'strength',B:'strength',M:'core',L1:'lower',L2:'lower',U1:'upper',U2:'upper',
+const BANMAP={A:'strength',B:'strength',M:'core',LOW:'lower',UPP:'upper',L1:'lower',L2:'lower',U1:'upper',U2:'upper',
               AB1:'core',AB2:'core',AR1:'upper',AR2:'upper',WALK:'cardio',LISS:'cardio',REST:'recovery'};
 const ICMAP={sq:'squat',ss:'squat',rdl:'hinge',srdl:'hinge',gb:'bridge',cp:'press',ip:'press',
              bp:'press',br:'row',bpd:'pulldown',
              rw:'row',lp:'pulldown',mc:'core',db:'core',cc:'core',bd:'plank',spl:'plank',
              pp:'antirotation',er:'shoulder',fp:'shoulder',lr:'shoulder',lc:'legcurl',
              td:'arms',bc:'arms',op:'overhead',walk:'walk',liss:'walk',yoga:'rest'};
-const TAG={A:'肌力',B:'肌力',M:'保養',L1:'下肢',U1:'上肢',L2:'下肢',U2:'上肢',WALK:'快走',LISS:'有氧',REST:'休'};
+const TAG={A:'肌力',B:'肌力',M:'保養',LOW:'下肢',UPP:'上肢',L1:'下肢',U1:'上肢',L2:'下肢',U2:'上肢',WALK:'快走',LISS:'有氧',REST:'休'};
 function renderStrip(){
   const mon=new Date(today);mon.setDate(mon.getDate()-((dow+6)%7));
   let h='';
   for(let i=0;i<7;i++){
-    const d=new Date(+mon+i*864e5), key=dayKeys(weekOf(d),d.getDay())[0];
-    h+='<div class="d'+(iso(d)===TD?' today':'')+'">'+DOWCH[d.getDay()]+'<b>'+d.getDate()+'</b><span>'+(TAG[key]||'')+'</span></div>';
+    const d=new Date(+mon+i*864e5), k=iso(d), key=dayKeys(weekOf(d),d.getDay())[0];
+    h+='<div class="d'+(k===TD?' today':'')+(k===VD&&VD!==TD?' sel':'')+'" onclick="setView(\''+k+'\')">'+DOWCH[d.getDay()]+'<b>'+d.getDate()+'</b><span>'+(TAG[key]||'')+'</span></div>';
   }
   document.getElementById('wstrip').innerHTML=h;
 }
 let step1Open=null; // null=自動判斷
-function morningDone(){const l=logs[TD]||{};return !!(l.w||l.s)}
+function morningDone(){const l=logs[VD]||{};return !!(l.w||l.s)}
 function toggleStep1(){step1Open=true;renderStep1()}
+function fillStep1(){ // 檢視日期切換時，把該日已存資料帶進表單（未存則清空）
+  const l=logs[VD]||{};
+  document.getElementById('inW').value=l.w||'';
+  document.getElementById('inWa').value=l.wa||'';
+  document.getElementById('inN').value=l.n||'';
+  setSleep(l.s||0,l.s?document.querySelectorAll('#segS button')[3-l.s]:null);
+}
 function renderStep1(){
-  const done=morningDone(), open=step1Open===null?!done:step1Open;
+  const fut=VD>TD;
+  const done=morningDone(), open=step1Open===null?(!done&&!fut):step1Open;
   const card=document.getElementById('card1');
-  card.className='card'+((done&&!open)?' collapsed':'');
-  const l=logs[TD]||{};
-  document.getElementById('step1Sum').textContent=((l.w?l.w+' kg':'')+(l.s?'・'+SLPT[l.s]:'')||'')+'（點我展開修改）';
+  card.className='card'+((done&&!open)||(fut&&!open)?' collapsed':'');
+  const l=logs[VD]||{};
+  document.getElementById('step1Sum').textContent=fut&&!done?'（未來日期，尚無紀錄）':(((l.w?l.w+' kg':'')+(l.s?'・'+SLPT[l.s]:'')||'')+'（點我展開修改）');
+  ['inW','inWa','inN'].forEach(i=>document.getElementById(i).disabled=fut);
+  document.querySelectorAll('#segS button').forEach(b=>b.disabled=fut);
+  document.getElementById('btnSave').disabled=fut;
 }
 function renderToday(){
+  const vd=vDate(), vwk=weekOf(vd), vdow=vd.getDay(), fut=VD>TD;
   const h=new Date().getHours();
   document.getElementById('hGreet').textContent=h<11?'早安！今天也來變強 👋':h<18?'午安！保持節奏 ⚡':'晚上好！練起來 🔥';
-  document.getElementById('hDate').textContent=today.toLocaleDateString('zh-TW',{month:'long',day:'numeric',weekday:'long'});
+  document.getElementById('hDate').textContent=vd.toLocaleDateString('zh-TW',{month:'long',day:'numeric',weekday:'long'});
+  const vn=document.getElementById('viewNote');
+  if(VD===TD)vn.style.display='none';
+  else{vn.style.display='block';
+    vn.textContent='📅 檢視 '+(vd.getMonth()+1)+'/'+vd.getDate()+'（週'+DOWCH[vdow]+'）'+(fut?'｜未來日期僅供預覽':'｜可補登紀錄')+'——點此回到今天';}
   const sk=streak();
   document.getElementById('streak').textContent=sk>0?'🔥 連續 '+sk+' 天':'✨ 第 1 天';
   const badges=document.getElementById('phaseBadges');
   if(wk<1){badges.innerHTML='<span class="badge">計畫 '+cfg.start+' 開跑</span>';}
   else badges.innerHTML='<span class="badge">第 '+wk+' 週｜'+PHASE(wk)+'</span>'+(isDeload(wk)?'<span class="badge deload">🔋 減量週</span>':'');
   renderStrip(); renderStep1();
-  const keys=dayKeys(wk,dow);
+  const keys=dayKeys(vwk,vdow);
   document.getElementById('banner').style.backgroundImage="url('img/banner-"+(BANMAP[keys[0]]||'strength')+".jpg')";
   document.getElementById('wName').textContent=keys.map(k=>W[k].name).join(' ');
-  document.getElementById('wNote').textContent=isDeload(wk)&&keys[0]!=='REST'?'減量週：全動作組數減半、阻力 −20%、RPE ≤6。照做，這是計畫的一部分。':'暖身：最偉大拉伸×3 → 開始。收操：瑜珈舒緩 10 分。';
-  const st=(logs[TD]&&logs[TD].done)||{};
+  document.getElementById('wNote').textContent=isDeload(vwk)&&keys[0]!=='REST'?'減量週：全動作組數減半、阻力 −20%、RPE ≤6。照做，這是計畫的一部分。':'暖身：最偉大拉伸×3 → 開始。收操：瑜珈舒緩 10 分。';
+  const st=(logs[VD]&&logs[VD].done)||{};
   const list=document.getElementById('exList');
   list.innerHTML='';
   let items=[];keys.forEach(k=>items=items.concat(W[k].ex));
   items.forEach(id=>{
     const e=EX[id],d=!!st[id];
     const div=document.createElement('div');div.className='ex'+(d?' done':'');
-    div.innerHTML='<img class="exic" src="img/icon-'+(ICMAP[id]||'squat')+'.png" alt="" loading="lazy"><div style="min-width:0"><div class="n">'+e.n+'</div><div class="m">'+e.m+'</div><div class="c">💡 '+e.c+'</div>'+guideHTML(id)+'</div><input type="checkbox" '+(d?'checked':'')+' onchange="tick(\''+id+'\',this.checked)">';
+    div.innerHTML='<img class="exic" src="img/icon-'+(ICMAP[id]||'squat')+'.png" alt="" loading="lazy"><div style="min-width:0"><div class="n">'+e.n+'</div><div class="m">'+e.m+'</div><div class="c">💡 '+e.c+'</div>'+guideHTML(id)+'</div><input type="checkbox" '+(d?'checked':'')+(fut?' disabled':'')+' onchange="tick(\''+id+'\',this.checked)">';
     list.appendChild(div);
   });
   const done=items.filter(i=>st[i]).length, pct=items.length?Math.round(100*done/items.length):0;
@@ -415,8 +443,15 @@ function renderToday(){
   document.getElementById('ringPct').textContent=pct+'%';
   document.getElementById('ringFg').setAttribute('stroke-dashoffset',String(169.6*(1-pct/100)));
   document.getElementById('cheer').style.display=(items.length&&done===items.length)?'block':'none';
-  document.getElementById('btnSend').textContent=(logs[TD]&&logs[TD].sent)?'✅ 已送出（再按會重送最新狀態）':'📤 送出今日資料（晨間紀錄＋訓練打勾 → Obsidian）';
-  const q=QUOTES[(today.getDate()+today.getMonth())%QUOTES.length];
+  const bs=document.getElementById('btnSend');
+  bs.style.display=fut?'none':'';
+  bs.textContent=(logs[VD]&&logs[VD].sent)?'✅ 已送出（再按會重送最新狀態）':(VD===TD?'📤 送出今日資料（晨間紀錄＋訓練打勾 → Obsidian）':'📤 送出 '+(vd.getMonth()+1)+'/'+vd.getDate()+' 資料 → Obsidian');
+  const le=LS.getItem('lastExport'), eh=document.getElementById('expHint');
+  if(!le){eh.style.color='';eh.textContent='💾 紀錄只存在這台裝置的瀏覽器裡，記得定期送 Obsidian 或複製 CSV 備份';}
+  else{const dd=Math.round((today-new Date(le+'T00:00:00'))/864e5);
+    eh.style.color=dd>7?'#ff6b6b':'';
+    eh.textContent='💾 上次匯出：'+(dd<=0?'今天':dd+' 天前')+(dd>7?'——超過一週了，備份一下吧':'');}
+  const q=QUOTES[(vd.getDate()+vd.getMonth())%QUOTES.length];
   document.getElementById('quote').textContent='💬 '+q;
 }
 const gOpen=new Set();
@@ -430,8 +465,10 @@ function guideHTML(id){
     g.v.map(x=>'<a href="'+x[1]+'" target="_blank" rel="noopener">▶ '+x[0]+'</a>').join('')+'</div>';
 }
 function tick(id,v){
-  logs[TD]=logs[TD]||{};logs[TD].done=logs[TD].done||{};logs[TD].done[id]=v;
-  logs[TD].workout=dayKeys(wk,dow).join('+');
+  if(VD>TD)return; // 未來日期唯讀
+  const vd=vDate();
+  logs[VD]=logs[VD]||{};logs[VD].done=logs[VD].done||{};logs[VD].done[id]=v;
+  logs[VD].workout=dayKeys(weekOf(vd),vd.getDay()).join('+');
   LS.setItem('logs',JSON.stringify(logs));renderToday();renderTrend();
 }
 let _sleep=0;
@@ -441,26 +478,31 @@ function setSleep(v,btn){
   if(btn)btn.classList.add('on');
 }
 function saveLog(){
-  logs[TD]=logs[TD]||{};
+  if(VD>TD)return; // 未來日期唯讀
+  const vd=vDate();
+  logs[VD]=logs[VD]||{};
   const g=i=>document.getElementById(i).value;
-  if(g('inW'))logs[TD].w=+g('inW');
-  if(_sleep)logs[TD].s=_sleep;
-  if(g('inWa'))logs[TD].wa=+g('inWa');
-  if(g('inN'))logs[TD].n=g('inN');
-  logs[TD].workout=logs[TD].workout||dayKeys(wk,dow).join('+');
+  if(g('inW'))logs[VD].w=+g('inW');
+  if(_sleep)logs[VD].s=_sleep;
+  if(g('inWa'))logs[VD].wa=+g('inWa');
+  if(g('inN'))logs[VD].n=g('inN');
+  logs[VD].workout=logs[VD].workout||dayKeys(weekOf(vd),vd.getDay()).join('+');
   LS.setItem('logs',JSON.stringify(logs));
   step1Open=false;
-  document.getElementById('saveMsg').textContent='✅ 晨間紀錄已存。練完打勾後按上面的「送出今日資料」。';
+  document.getElementById('saveMsg').textContent=VD===TD?'✅ 晨間紀錄已存。練完打勾後按上面的「送出今日資料」。':'✅ '+(vd.getMonth()+1)+'/'+vd.getDate()+' 紀錄已補登。';
   renderToday();renderTrend();
 }
 function sendToday(){
-  const l=logs[TD]||{};
-  const keys=dayKeys(wk,dow);
+  if(VD>TD)return; // 未來日期不可送出
+  const vd=vDate();
+  const l=logs[VD]||{};
+  const keys=dayKeys(weekOf(vd),vd.getDay());
   let items=[];keys.forEach(k=>items=items.concat(W[k].ex));
   const done=items.filter(i=>l.done&&l.done[i]).length;
   const note=((l.n||'')+(items.length?(' 完成'+done+'/'+items.length):'')).trim();
-  const line=[TD,l.w||'',(l.workout||keys.join('+')),l.s||'',l.wa||'',note].join(',');
-  logs[TD]=l;l.sent=true;LS.setItem('logs',JSON.stringify(logs));
+  const line=[VD,l.w||'',(l.workout||keys.join('+')),l.s||'',l.wa||'',note].join(',');
+  logs[VD]=l;l.sent=true;LS.setItem('logs',JSON.stringify(logs));
+  LS.setItem('lastExport',TD);
   renderToday();
   location.href='obsidian://adv-uri?vault='+encodeURIComponent(cfg.vault)+'&filepath='+encodeURIComponent(cfg.path)+'&data='+encodeURIComponent(line)+'&mode=append';
 }
@@ -485,7 +527,7 @@ function renderTrend(){
   if(s.length>7){const prev=avg7(s,s.length-2);const d=a7-prev;
     document.getElementById('tAvgD').textContent=(d<=0?'↓ ':'↑ ')+Math.abs(d).toFixed(2);}
   const mon=new Date(today);mon.setDate(mon.getDate()-((dow+6)%7));
-  let n=0,target=wk<=12?3:4;
+  let n=0,target=3;
   for(let i=0;i<7;i++){const d=iso(new Date(+mon+i*864e5));
     if(logs[d]&&logs[d].done&&Object.values(logs[d].done).some(Boolean)&&!['REST','WALK','LISS','M'].includes((logs[d].workout||'').split('+')[0]))n++;}
   document.getElementById('tWk').textContent=n+'/'+target;
@@ -532,7 +574,7 @@ function csv(){
     out+=[d,l.w||'',l.workout||'',l.s||'',l.wa||'',(l.n||'').replace(/,/g,'；')].join(',')+'\n';});
   return out;
 }
-function copyCSV(){navigator.clipboard.writeText(csv()).then(()=>alert('已複製 '+Object.keys(logs).length+' 天紀錄。貼給 Claude 分析，或貼進健身日誌備份。'))}
+function copyCSV(){navigator.clipboard.writeText(csv()).then(()=>{LS.setItem('lastExport',TD);renderToday();alert('已複製 '+Object.keys(logs).length+' 天紀錄。貼給 Claude 分析，或貼進健身日誌備份。')})}
 /* ── 課表頁 / 設定 ── */
 function renderPlan(){
   const w=+document.getElementById('inWk').value||Math.max(wk,1);
@@ -561,8 +603,7 @@ document.getElementById('inStart').value=cfg.start;
 document.getElementById('inVault').value=cfg.vault;
 document.getElementById('inPath').value=cfg.path;
 document.getElementById('inWk').value=Math.max(wk,1);
-if(logs[TD]){if(logs[TD].w)document.getElementById('inW').value=logs[TD].w;if(logs[TD].n)document.getElementById('inN').value=logs[TD].n;
-  if(logs[TD].s)setSleep(logs[TD].s,document.querySelectorAll('#segS button')[3-logs[TD].s]);}
+fillStep1();
 renderToday();renderTrend();
 </script>
 </body>
