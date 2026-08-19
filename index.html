@@ -359,8 +359,9 @@ const QUOTES=[
 ];
 /* ── 狀態 ── */
 const LS=localStorage;
-const cfg=JSON.parse(LS.getItem('cfg')||'{"start":"2026-07-06","vault":"StanleyInbox","path":"健身日誌/健身紀錄log.md"}');
+const cfg=JSON.parse(LS.getItem('cfg')||'{"start":"2026-08-24","vault":"StanleyInbox","path":"健身日誌/健身紀錄log.md"}');
 if(cfg.path==='健身日誌.md'){cfg.path='健身日誌/健身紀錄log.md';LS.setItem('cfg',JSON.stringify(cfg));} // vault 已改資料夾結構，自動遷移舊設定
+if(!LS.getItem('reset20260824')){cfg.start='2026-08-24';LS.setItem('cfg',JSON.stringify(cfg));LS.setItem('reset20260824','1');} // 一次性重啟：W1 週一改 2026-08-24（跑一次就記住，之後在設定裡自己改仍有效）
 const logs=JSON.parse(LS.getItem('logs')||'{}');   // {date:{w,s,wa,n,done,workout,sent}}
 const today=new Date(); today.setHours(0,0,0,0);
 const iso=d=>d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); // 本地時區，避免 UTC 差一天

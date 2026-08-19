@@ -26,11 +26,11 @@ const src = fs.readFileSync('index.html','utf-8').match(/<script>([\s\S]*)<\/scr
 const tests = `
 const assert=(c,m)=>{if(!c)throw new Error('ASSERT FAILED: '+m)};
 const A = (w,d)=>dayKeys(w,d).join('+');
-assert(A(1,1)==='A' && A(1,3)==='B' && A(1,5)==='A', 'W1 一A三B五A');
+assert(A(1,2)==='LOW' && A(1,3)==='UPP' && A(1,5)==='A', 'W1 肌力日二下肢三上肢五全身');
 assert(A(2,5)==='B', 'W2 五=B（交替）');
-assert(A(1,2)==='M' && A(1,6)==='WALK' && A(1,0)==='REST', 'W1 二保養/六走/日休');
-assert(A(13,1)==='L1' && A(13,3)==='REST' && A(24,5)==='U2', '肌力期上下分化');
-assert(A(25,1)==='L1+AB1' && A(25,2)==='U1+AR1' && A(30,6)==='LISS', '分化期腹肌/弱點/LISS');
+assert(A(1,1)==='M' && A(1,6)==='WALK' && A(1,0)==='REST', 'W1 一保養/六走/日休');
+assert(A(13,2)==='L1' && A(13,3)==='U1' && A(24,5)==='U2', '肌力期上下分化');
+assert(A(25,2)==='L1+AB1' && A(25,3)==='U1+AR1' && A(30,6)==='LISS', '分化期腹肌/弱點/LISS');
 assert(isDeload(4)&&isDeload(8)&&!isDeload(5), 'Deload 每4週');
 assert(PHASE(12)==='基礎鞏固期'&&PHASE(13)==='肌力累積期'&&PHASE(25)==='分化專項期', '階段切換');
 for(let w of [1,13,25]){const sc=schedule(w);
@@ -40,8 +40,8 @@ for(let w of [1,13,25]){const sc=schedule(w);
   });}
 assert(iso(new Date('2026-07-02T00:30:00'))==='2026-07-02', 'iso 必須用本地時區（UTC 會差一天）：'+iso(new Date('2026-07-02T00:30:00')));
 const mkWeek = ds => { const s=new Date(cfg.start+'T00:00:00'); return Math.floor((new Date(ds+'T00:00:00')-s)/6048e5)+1 };
-assert(mkWeek('2026-07-06')===1 && mkWeek('2026-07-12')===1 && mkWeek('2026-07-13')===2, '週界線');
-assert(mkWeek('2026-07-05')===0, '開跑前=第0週');
+assert(mkWeek('2026-08-24')===1 && mkWeek('2026-08-30')===1 && mkWeek('2026-08-31')===2, '週界線');
+assert(mkWeek('2026-08-23')===0, '開跑前=第0週');
 const s7=[...Array(10)].map((_,i)=>({d:iso(new Date(+new Date('2026-07-06T00:00:00')+i*864e5)),w:70-i*0.1}));
 const a=avg7(s7,9); assert(Math.abs(a-(70-(3+4+5+6+7+8+9)/7*0.1))<1e-9, 'avg7 取7日窗, got '+a);
 logs['2026-07-06']={w:70,s:3,workout:'A',n:'ok, good'};
