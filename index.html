@@ -565,7 +565,7 @@ function renderTrend(){
   const a7=s.length?avg7(s,s.length-1):null;
   document.getElementById('tAvg').textContent=a7?a7.toFixed(1):'—';
   document.getElementById('tGoal').textContent=a7?(a7-60).toFixed(1):'—';
-  const START_W=70; // 計畫起點體重（2026-07-06 開跑）——70→60 的旅程進度條
+  const START_W=70.6; // 計畫起點體重（2026-08-24 重啟，08-20 實量）——70.6→60 的旅程進度條
   document.getElementById('tGoalBar').style.width=a7?Math.max(0,Math.min(100,100*(START_W-a7)/(START_W-60)))+'%':'0';
   if(s.length>7){const prev=avg7(s,s.length-2);const d=a7-prev;
     document.getElementById('tAvgD').textContent=(d<=0?'↓ ':'↑ ')+Math.abs(d).toFixed(2);}
