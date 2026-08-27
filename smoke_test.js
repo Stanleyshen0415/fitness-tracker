@@ -40,8 +40,8 @@ for(let w of [1,13,25]){const sc=schedule(w);
   });}
 assert(iso(new Date('2026-07-02T00:30:00'))==='2026-07-02', 'iso 必須用本地時區（UTC 會差一天）：'+iso(new Date('2026-07-02T00:30:00')));
 const mkWeek = ds => { const s=new Date(cfg.start+'T00:00:00'); return Math.floor((new Date(ds+'T00:00:00')-s)/6048e5)+1 };
-assert(mkWeek('2026-08-24')===1 && mkWeek('2026-08-30')===1 && mkWeek('2026-08-31')===2, '週界線');
-assert(mkWeek('2026-08-23')===0, '開跑前=第0週');
+assert(mkWeek('2026-08-31')===1 && mkWeek('2026-09-06')===1 && mkWeek('2026-09-07')===2, '週界線');
+assert(mkWeek('2026-08-30')===0, '開跑前=第0週');
 const s7=[...Array(10)].map((_,i)=>({d:iso(new Date(+new Date('2026-07-06T00:00:00')+i*864e5)),w:70-i*0.1}));
 const a=avg7(s7,9); assert(Math.abs(a-(70-(3+4+5+6+7+8+9)/7*0.1))<1e-9, 'avg7 取7日窗, got '+a);
 logs['2026-07-06']={w:70,s:3,workout:'A',n:'ok, good'};
