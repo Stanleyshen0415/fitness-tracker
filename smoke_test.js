@@ -30,7 +30,7 @@ assert(A(0,2)==='REST' && A(0,4)==='REST' && A(0,6)==='REST' && A(0,0)==='SUN', 
 assert(A(1,2)==='LOW' && A(1,4)==='UPP' && A(1,6)==='SAT' && A(1,0)==='SUN', 'W1 直接上肌力：二下肢／四上肢／六長課／日快走');
 assert(A(1,1)==='REST' && A(1,3)==='REST' && A(1,5)==='REST', '一三五 REST（既有 HIIT 套餐、不計 KPI）');
 assert(A(8,6)==='SAT' && A(9,6)==='SATGYM', 'W9 起週六換喬山');
-assert(W.REST.ex.length===0, '休息日無項目');
+assert(W.REST.ex.join()==='db' && G.db && G.db.v.length===2, 'HIIT 套餐日只掛死蟲式卡（替代仰臥起坐、含教學影片）');
 assert(W.LOW.ex.slice(0,2).join()==='bd,er' && W.UPP.ex.slice(0,2).join()==='bd,er', '肌力日前兩項＝暖身');
 assert(!isDeload(4)&&!isDeload(8)&&!isDeload(9)&&isDeload(13)&&isDeload(17), '前 8 週不減量、W13 起每 4 週');
 assert(PHASE(0)==='W0 前奏'&&PHASE(1)==='徒手期'&&PHASE(8)==='徒手期'&&PHASE(9)==='喬山期', '階段切換');

@@ -325,7 +325,7 @@ const W = {
   SAT:{name:'週六長課｜全身（下午，60–75分）',ex:['bd','er','sq','rdl','ss','ip','br','fp','walk']},
   SATGYM:{name:'週六機器日｜喬山 Torus 5（下午）',ex:['bd','er','cp','lp','rw','lc','rdl','walk']},
   SUN:{name:'週日｜戶外快走＋核心＋量測（早）',ex:['walk','spl','bd','meas']},
-  REST:{name:'休息日｜既有晨間套餐照做（不計 KPI）',ex:[]},
+  REST:{name:'HIIT 套餐日｜跟 YouTube 做，仰臥起坐段換死蟲式（不計 KPI）',ex:['db']},
 };
 /* 週 → 每日課表鍵。dow: 0=日…6=六。W0（開跑前）全休；W1–8 徒手；W9 起週六換喬山 */
 function schedule(wk){
@@ -450,7 +450,7 @@ function renderToday(){
     SAT:'午餐後 2 小時開始。暖身同平日；RDL 全程只在這天做。3 組起手。',
     SATGYM:'午餐後 2 小時。永遠不做直立划船／頸後下拉；繩索對握、肩胛平面；胸推站調整後仍前肩痛→改繩索胸推。第一週磅數保守。',
     SUN:'有早餐→早餐後出門；沒早餐→起床 1 小時內固定時間出門。戶外、有日光、能講話不能唱歌。回來量腰圍拍照。',
-    REST:'早上既有套餐照做（YouTube 那支 8 分鐘＋瑜珈舒緩），不打勾、不計 KPI；仰臥起坐那段改死蟲式；膝有痛感或睡差那天，跳的動作改踏步。晚上不排。'};
+    REST:'早上既有套餐照做（YouTube 那支 8 分鐘＋瑜珈舒緩），不計 KPI。影片到「仰臥起坐」那段改做下面的死蟲式（點 📖 看步驟與教學影片、做該段時間即可）；膝有痛感或睡差那天，跳的動作改踏步。晚上不排。'};
   const lv=logs[VD]||{}, fuse=(lv.s===1||(lv.c&&lv.c<4))&&['LOW','UPP','SAT','SATGYM'].includes(keys[0]);
   const wn=document.getElementById('wNote');
   wn.textContent=fuse?'⚠️ 保險絲：前晚睡眠差／CPAP <4h → 今天改保養 15 分（暖身內容×2 組），記「有活動」、不算肌力出席。':(isDeload(vwk)&&keys[0]!=='REST'?'減量週：組數減半、阻力 −20%、RPE ≤6。':NOTE[keys[0]]||'');
