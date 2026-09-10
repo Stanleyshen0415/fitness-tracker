@@ -26,14 +26,15 @@ const src = fs.readFileSync('index.html','utf-8').match(/<script>([\s\S]*)<\/scr
 const tests = `
 const assert=(c,m)=>{if(!c)throw new Error('ASSERT FAILED: '+m)};
 const A = (w,d)=>dayKeys(w,d).join('+');
-assert(A(1,2)==='RECOV' && A(1,4)==='RECOV' && A(1,6)==='RECOV' && A(1,0)==='SUN', 'W1 恢復週：二四六 RECOV／日 SUN');
-assert(A(2,2)==='LOW' && A(2,4)==='UPP' && A(2,6)==='SAT' && A(2,0)==='SUN', 'W2 二下肢／四上肢／六長課／日快走');
-assert(A(2,1)==='REST' && A(2,3)==='REST' && A(2,5)==='REST', '一三五休');
+assert(A(0,2)==='REST' && A(0,4)==='REST' && A(0,6)==='REST' && A(0,0)==='SUN', 'W0 前奏：全休、週日量基線');
+assert(A(1,2)==='LOW' && A(1,4)==='UPP' && A(1,6)==='SAT' && A(1,0)==='SUN', 'W1 直接上肌力：二下肢／四上肢／六長課／日快走');
+assert(A(1,1)==='REST' && A(1,3)==='REST' && A(1,5)==='REST', '一三五 REST（既有 HIIT 套餐、不計 KPI）');
 assert(A(8,6)==='SAT' && A(9,6)==='SATGYM', 'W9 起週六換喬山');
 assert(W.REST.ex.length===0, '休息日無項目');
+assert(W.LOW.ex.slice(0,2).join()==='bd,er' && W.UPP.ex.slice(0,2).join()==='bd,er', '肌力日前兩項＝暖身');
 assert(!isDeload(4)&&!isDeload(8)&&!isDeload(9)&&isDeload(13)&&isDeload(17), '前 8 週不減量、W13 起每 4 週');
-assert(PHASE(1)==='恢復週'&&PHASE(2)==='徒手期'&&PHASE(8)==='徒手期'&&PHASE(9)==='喬山期', '階段切換');
-for(let w of [1,2,9]){const sc=schedule(w);
+assert(PHASE(0)==='W0 前奏'&&PHASE(1)==='徒手期'&&PHASE(8)==='徒手期'&&PHASE(9)==='喬山期', '階段切換');
+for(let w of [0,1,9]){const sc=schedule(w);
   for(let d in sc) sc[d].forEach(k=>{
     assert(W[k], '未定義課表鍵 '+k);
     W[k].ex.forEach(i=>assert(EX[i],'未定義動作 '+i));
@@ -41,21 +42,21 @@ for(let w of [1,2,9]){const sc=schedule(w);
 assert(iso(new Date('2026-07-02T00:30:00'))==='2026-07-02', 'iso 必須用本地時區（UTC 會差一天）：'+iso(new Date('2026-07-02T00:30:00')));
 const mkWeek = ds => { const s=new Date(cfg.start+'T00:00:00'); return Math.floor((new Date(ds+'T00:00:00')-s)/6048e5)+1 };
 assert(mkWeek('2026-09-14')===1 && mkWeek('2026-09-20')===1 && mkWeek('2026-09-21')===2, '週界線');
-assert(mkWeek('2026-09-11')===0 && A(0,4)==='RECOV', 'W0 前奏套 W1 課表');
+assert(mkWeek('2026-09-11')===0, '開跑前＝第 0 週');
 const s7=[...Array(10)].map((_,i)=>({d:iso(new Date(+new Date('2026-07-06T00:00:00')+i*864e5)),w:70-i*0.1}));
 const a=avg7(s7,9); assert(Math.abs(a-(70-(3+4+5+6+7+8+9)/7*0.1))<1e-9, 'avg7 取7日窗, got '+a);
 logs['2026-07-06']={w:70,s:3,c:6.5,workout:'LOW',n:'ok, good'};
 const c=csv(); assert(c.startsWith('date,weight_kg,workout,sleep_score,cpap_hours,waist_cm,note,resistance'), 'CSV 表頭含 cpap_hours');
 assert(c.includes('2026-07-06,70,LOW,3,6.5,,ok； good'), 'CSV 行格式+cpap+逗號跳脫: '+c);
 setSleep(2); assert(_sleep===2, 'setSleep 存值');
-// 送出資料（用過去的週二 09-08＝W1 課表 RECOV）：組合晨間+打勾+cpap、標記 sent、產 adv-uri
+// 送出資料（用過去的週二 09-08＝W0 REST、無項目）：組合晨間+cpap、標記 sent、產 adv-uri
 VD='2026-09-08';
-logs[VD]={w:69.9,s:2,c:5.2,done:{recov:true},n:'膝OK'};
+logs[VD]={w:69.9,s:2,c:5.2,n:'膝OK'};
 sendToday();
 assert(logs[VD].sent===true, 'sendToday 標記 sent');
 assert(location.href.includes('adv-uri') && location.href.includes(encodeURIComponent('健身日誌/健身紀錄log.md')), 'sendToday 產生 adv-uri: '+location.href);
 const sent=decodeURIComponent(location.href);
-assert(sent.includes('2026-09-08,69.9,RECOV,2,5.2,,膝OK 完成1/1'), 'sendToday 行含 cpap 欄與完成數: '+sent);
+assert(sent.includes('2026-09-08,69.9,REST,2,5.2,,膝OK'), 'sendToday 行含 cpap 欄: '+sent);
 assert(morningDone()===true, 'morningDone 判定');
 // 每週 4 件必做帳：最低配每 7 天只算 1 次；REST 日打勾不算
 const mon=new Date('2026-09-21T00:00:00');
@@ -68,7 +69,7 @@ const wd=weekDone(mon); assert(wd.n===3&&wd.minUsed===2, '必做帳：2 最低�
 setMin(false); assert(!logs[VD].min, 'setMin 清除');
 VD=TD;
 // 導引卡：除有氧/休息外每動作都要有卡+至少1支影片
-Object.keys(EX).filter(k=>!['walk','meas','recov'].includes(k)).forEach(k=>{
+Object.keys(EX).filter(k=>!['walk','meas'].includes(k)).forEach(k=>{
   assert(G[k]&&G[k].s&&G[k].e&&G[k].r, '缺導引卡: '+k);
   assert(G[k].v.length>=1&&G[k].v.every(x=>x[1].startsWith('https://www.youtube.com/')), '導引卡影片異常: '+k);
 });

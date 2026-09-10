@@ -248,7 +248,7 @@
     <label>計畫開始日（W1 週一）</label><input type="date" id="inStart" onchange="saveCfg()">
     <label>Obsidian vault 名稱</label><input type="text" id="inVault" onchange="saveCfg()">
     <label>日誌檔路徑</label><input type="text" id="inPath" onchange="saveCfg()">
-    <div class="hint">v2.1 晨練版（2026-09-14 W1）：每週 4 件必做＝二早下肢／四早上肢／六下午長課／日早快走＋量測，一三五休、晚上不排。W1 恢復週、W2–W8 徒手在家、W9（11-14）起週六改喬山 Torus 5。完整計畫在 StanleyBrain repo 家庭/健康/。</div>
+    <div class="hint">v2.1 晨練版（2026-09-14 W1）：每週 4 件必做＝二早下肢／四早上肢／六下午長課／日早快走＋量測；一三五早上既有 8 分鐘套餐照舊（不計 KPI）、晚上不排。W1–W8 徒手在家（W1–W6 六週實跑、W7 回顧）、W9（11-14）起週六改喬山 Torus 5。完整計畫在 StanleyBrain repo 家庭/健康/。</div>
   </div>
 </div>
 
@@ -288,7 +288,6 @@ const EX = {
   bpd:{n:'彈力繩跪姿下拉',m:'2–3×10–12｜RPE6–7｜2-1-2｜休75s',c:'手肘往骨盆拉；手掌只是鉤子'},
   walk:{n:'戶外快走（Zone 2）',m:'週日 60 分主課／週六 20 分收尾',c:'能講話但不能唱歌的速度；週日早餐後、有日光'},
   meas:{n:'量測日',m:'腰圍（肚臍水平）＋同角度照片＋看七天均重',c:'看趨勢不看單點'},
-  recov:{n:'舊套餐低強度版（早上 slot）',m:'最偉大拉伸×3 → 8 分鐘踏步／徒手深蹲慢版（不跳）→ 瑜珈舒緩 10',c:'這週練的是「早上這個時段」，不是內容'},
 };
 /* 新手導引卡：s=步驟 e=常見錯誤→修正口令 r=退階/進階 v=教學影片（皆經 oEmbed 查證） */
 const G = {
@@ -318,24 +317,24 @@ const G = {
  br:{s:"①坐地、雙腳前伸勾住彈力繩，雙手握兩端 ②胸口微挺、先肩胛後收啟動 ③手肘沿身側向後拉 ④2秒慢回",e:"聳肩→「肩胛往下再往後」；後仰借力→「上身像釘住的門柱」",r:"退階：更輕的繩｜進階：加磅數、頂端停2秒；第4個月接喬山 Torus 5 坐姿划船",v:[["🇹🇼 彈力帶划船完整教學｜健美女大生","https://www.youtube.com/watch?v=pb3d2qnVrrc"],["🇹🇼 坐姿划船緊實背部｜壯壯老師","https://www.youtube.com/watch?v=boEPSyEIq00"]]},
  bpd:{s:"①彈力繩固定於高處、跪姿雙手握兩端 ②胸口微挺 ③手肘往骨盆方向下拉至繩近鎖骨 ④2秒慢回",e:"往後躺硬拉→「上身固定、只有手臂下拉」；手臂主導→「想像手掌只是鉤子」",r:"退階：更輕的繩、站姿直臂下壓｜進階：加磅數、頂端停1秒；第4個月接喬山 Torus 5 滑輪下拉",v:[["🇹🇼 彈力繩下拉練背完整教學｜女力健身 Nuli","https://www.youtube.com/watch?v=OhquQspVpIs"],["🇺🇸 居家下拉固定設定＋常見錯誤｜Clench Fitness","https://www.youtube.com/watch?v=BEHY9CwiWPI"]]},
 };
-/* v2.1 晨練版（2026-09-10 紅隊定稿）：每週 4 件必做＝二早 LOW／四早 UPP／六下午長課／日早快走＋量測；一三五休、晚上不排 */
+/* v2.1 晨練版（2026-09-10 紅隊定稿）：每週 4 件必做＝二早 LOW／四早 UPP／六下午長課／日早快走＋量測；
+   一三五早上＝既有 8 分鐘 HIIT 套餐照舊（Stanley 實跑：已習慣、腰膝 OK）、不計 KPI；晚上不排。肌力日前兩項＝暖身（鳥狗、肩外旋） */
 const W = {
-  LOW:{name:'肌力 LOW｜下肢＋核心（早，25分）',ex:['sq','gb','ss','db','pp']},
-  UPP:{name:'肌力 UPP｜上肢推拉（早，25分）',ex:['ip','br','bp','bpd','fp']},
-  SAT:{name:'週六長課｜全身（下午，60–75分）',ex:['sq','rdl','ss','ip','br','fp','walk']},
-  SATGYM:{name:'週六機器日｜喬山 Torus 5（下午）',ex:['cp','lp','rw','lc','rdl','walk']},
+  LOW:{name:'肌力 LOW｜下肢＋核心（早，25分）',ex:['bd','er','sq','gb','ss','db','pp']},
+  UPP:{name:'肌力 UPP｜上肢推拉（早，25分）',ex:['bd','er','ip','br','bp','bpd','fp']},
+  SAT:{name:'週六長課｜全身（下午，60–75分）',ex:['bd','er','sq','rdl','ss','ip','br','fp','walk']},
+  SATGYM:{name:'週六機器日｜喬山 Torus 5（下午）',ex:['bd','er','cp','lp','rw','lc','rdl','walk']},
   SUN:{name:'週日｜戶外快走＋核心＋量測（早）',ex:['walk','spl','bd','meas']},
-  RECOV:{name:'恢復週｜早上 slot 舊套餐低強度版',ex:['recov']},
-  REST:{name:'休息日',ex:[]},
+  REST:{name:'休息日｜既有晨間套餐照做（不計 KPI）',ex:[]},
 };
-/* 週 → 每日課表鍵。dow: 0=日…6=六。W1（含 W0 前奏）＝恢復週；W2–8 徒手；W9 起週六換喬山 */
+/* 週 → 每日課表鍵。dow: 0=日…6=六。W0（開跑前）全休；W1–8 徒手；W9 起週六換喬山 */
 function schedule(wk){
-  if(wk<=1) return {1:['REST'],2:['RECOV'],3:['REST'],4:['RECOV'],5:['REST'],6:['RECOV'],0:['SUN']};
+  if(wk<1) return {1:['REST'],2:['REST'],3:['REST'],4:['REST'],5:['REST'],6:['REST'],0:['SUN']};
   return {1:['REST'],2:['LOW'],3:['REST'],4:['UPP'],5:['REST'],6:[wk>=9?'SATGYM':'SAT'],0:['SUN']};
 }
-const PHASE=w=>w<=1?'恢復週':w<=8?'徒手期':'喬山期';
-/* 每週 4 件必做的出席帳：LOW/UPP/SAT/SATGYM/SUN/RECOV 有打勾＝1 件；「最低配」每 7 天只有第 1 次算 */
-const MUST=['LOW','UPP','SAT','SATGYM','SUN','RECOV'];
+const PHASE=w=>w<1?'W0 前奏':w<=8?'徒手期':'喬山期';
+/* 每週 4 件必做的出席帳：LOW/UPP/SAT/SATGYM/SUN 有打勾＝1 件；「最低配」每 7 天只有第 1 次算 */
+const MUST=['LOW','UPP','SAT','SATGYM','SUN'];
 function weekDone(mon){ // mon: 該週週一 Date → {n, minUsed}
   let n=0,minUsed=0;
   for(let i=0;i<7;i++){const d=iso(new Date(+mon+i*864e5)),l=logs[d];
@@ -379,7 +378,7 @@ const isDeload=w=>w>=13&&(w-13)%4===0; // 前 8 週不減量（紅隊共識）�
 const SLPT={3:'😴 優',2:'🙂 普',1:'😪 差'};
 
 /* ── 今日頁 ── */
-function dayKeys(w,dw){return schedule(Math.max(w,1))[dw]}
+function dayKeys(w,dw){return schedule(w)[dw]}
 function streak(){
   let n=0,d=new Date(today);
   const active=k=>{const l=logs[k];return l&&((l.done&&Object.values(l.done).some(Boolean))||l.w)};
@@ -389,13 +388,13 @@ function streak(){
 }
 const DOWCH=['日','一','二','三','四','五','六'];
 /* 視覺資產對映（img/ 由 draw skill 生成） */
-const BANMAP={LOW:'lower',UPP:'upper',SAT:'strength',SATGYM:'strength',SUN:'cardio',RECOV:'recovery',REST:'recovery'};
+const BANMAP={LOW:'lower',UPP:'upper',SAT:'strength',SATGYM:'strength',SUN:'cardio',REST:'recovery'};
 const ICMAP={sq:'squat',ss:'squat',rdl:'hinge',srdl:'hinge',gb:'bridge',cp:'press',ip:'press',
              bp:'press',br:'row',bpd:'pulldown',
              rw:'row',lp:'pulldown',mc:'core',db:'core',cc:'core',bd:'plank',spl:'plank',
              pp:'antirotation',er:'shoulder',fp:'shoulder',lr:'shoulder',lc:'legcurl',
-             td:'arms',bc:'arms',op:'overhead',walk:'walk',meas:'rest',recov:'core'};
-const TAG={LOW:'下肢',UPP:'上肢',SAT:'長課',SATGYM:'喬山',SUN:'快走',RECOV:'恢復',REST:'休'};
+             td:'arms',bc:'arms',op:'overhead',walk:'walk',meas:'rest'};
+const TAG={LOW:'下肢',UPP:'上肢',SAT:'長課',SATGYM:'喬山',SUN:'快走',REST:'HIIT'};
 function renderStrip(){
   const mon=new Date(today);mon.setDate(mon.getDate()-((dow+6)%7));
   let h='';
@@ -446,13 +445,12 @@ function renderToday(){
   const keys=dayKeys(vwk,vdow);
   document.getElementById('banner').style.backgroundImage="url('img/banner-"+(BANMAP[keys[0]]||'strength')+".jpg')";
   document.getElementById('wName').textContent=keys.map(k=>W[k].name).join(' ');
-  const NOTE={LOW:'起床→廁所→量體重→溫檸檬鹽水→洗碗 10 分（挺直）→暖身 5 分（最偉大拉伸×3・鳥狗 1×6・肩外旋 1×15）→主訓 25→瑜珈舒緩 10。訓後 15 分內乳清 1 匙。時間到就結束、不補。',
-    UPP:'流程同週二。訓後 15 分內乳清 1 匙。肩前側刺痛立停。',
+  const NOTE={LOW:'今天 8 分鐘 HIIT 換成肌力：起床→廁所→量體重→溫檸檬鹽水→洗碗 10 分（挺直）→最偉大拉伸×3→鳥狗・肩外旋（暖身）→主訓 25→瑜珈舒緩 10。訓後 15 分內乳清 1 匙。時間到就結束、不補。',
+    UPP:'今天 8 分鐘 HIIT 換成肌力，流程同週二。訓後 15 分內乳清 1 匙。肩前側刺痛立停。',
     SAT:'午餐後 2 小時開始。暖身同平日；RDL 全程只在這天做。3 組起手。',
     SATGYM:'午餐後 2 小時。永遠不做直立划船／頸後下拉；繩索對握、肩胛平面；胸推站調整後仍前肩痛→改繩索胸推。第一週磅數保守。',
     SUN:'有早餐→早餐後出門；沒早餐→起床 1 小時內固定時間出門。戶外、有日光、能講話不能唱歌。回來量腰圍拍照。',
-    RECOV:'這週練的是「早上這個時段」。晚上不排。CPAP 時數每天抄。',
-    REST:'休。晚上想伸展就伸展、不記、不補。'};
+    REST:'早上既有套餐照做（YouTube 那支 8 分鐘＋瑜珈舒緩），不打勾、不計 KPI；仰臥起坐那段改死蟲式；膝有痛感或睡差那天，跳的動作改踏步。晚上不排。'};
   const lv=logs[VD]||{}, fuse=(lv.s===1||(lv.c&&lv.c<4))&&['LOW','UPP','SAT','SATGYM'].includes(keys[0]);
   const wn=document.getElementById('wNote');
   wn.textContent=fuse?'⚠️ 保險絲：前晚睡眠差／CPAP <4h → 今天改保養 15 分（暖身內容×2 組），記「有活動」、不算肌力出席。':(isDeload(vwk)&&keys[0]!=='REST'?'減量週：組數減半、阻力 −20%、RPE ≤6。':NOTE[keys[0]]||'');
@@ -466,7 +464,7 @@ function renderToday(){
     const div=document.createElement('div');div.className='ex'+(d?' done':'');
     /* 漸進超負荷：記本次阻力/重量，placeholder 帶出最近一次的值 */
     let wtH='';
-    if(!['walk','meas','recov'].includes(id)){
+    if(!['walk','meas'].includes(id)){
       const cur=(logs[VD]&&logs[VD].wt&&logs[VD].wt[id])||'', last=lastWt(id);
       wtH='<input class="wt" value="'+esc(cur)+'" placeholder="'+esc(last?'上次：'+last:'阻力/重量')+'"'+(fut?' disabled':'')+' onchange="setWt(\''+id+'\',this.value)">';
     }
@@ -646,7 +644,7 @@ function copyCSV(){navigator.clipboard.writeText(csv()).then(()=>{LS.setItem('la
 function renderPlan(){
   const w=+document.getElementById('inWk').value||Math.max(wk,1);
   const sc=schedule(w),names=['日','一','二','三','四','五','六'];
-  let h='<div class="wk">📍 今天＝'+(wk<1?('W0 前奏（W1 '+cfg.start+' 開跑，先照恢復週課表）'):('第 '+wk+' 週｜'+PHASE(wk)+(isDeload(wk)?'｜🔋 本週減量':'')))+'——第一頁每天自動跟著這裡的進度出課表</div>';
+  let h='<div class="wk">📍 今天＝'+(wk<1?('W0 前奏（W1 '+cfg.start+' 開跑；這幾天早上既有套餐照做、週日量基線）'):('第 '+wk+' 週｜'+PHASE(wk)+(isDeload(wk)?'｜🔋 本週減量':'')))+'——第一頁每天自動跟著這裡的進度出課表</div>';
   h+='<div class="wk">第 '+w+' 週｜'+PHASE(w)+(isDeload(w)?'｜🔋 減量週':'')+'</div>';
   [1,2,3,4,5,6,0].forEach(d=>{
     h+='<div class="ex"><div><div class="n">週'+names[d]+'</div><div class="m">'+sc[d].map(k=>W[k].name).join('｜')+'</div><div class="c">'+sc[d].flatMap(k=>W[k].ex).map(i=>EX[i].n).join('、')+'</div></div></div>';});
