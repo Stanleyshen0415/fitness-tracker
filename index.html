@@ -166,7 +166,10 @@
     <div class="sec step-title-sec">Step 1</div>
     <h2 class="step-title">晨間紀錄</h2>
     <div class="step-body">
-      <label>體重 kg</label><input type="number" id="inW" step="0.1" inputmode="decimal" placeholder="70.0">
+      <div class="row">
+        <div><label>體重 kg</label><input type="number" id="inW" step="0.1" inputmode="decimal" placeholder="70.0"></div>
+        <div><label>CPAP 時數（抄 app）</label><input type="number" id="inC" step="0.1" inputmode="decimal" placeholder="7.0"></div>
+      </div>
       <label>昨晚睡眠（90 分鐘一個循環）</label>
       <div class="seg" id="segS">
         <button type="button" onclick="setSleep(3,this)">😴 優<span>≥7.5h（5循環）</span></button>
@@ -178,7 +181,7 @@
         <div><label>備註</label><input type="text" id="inN" placeholder="痛點/狀態"></div>
       </div>
       <button id="btnSave" onclick="saveLog()">儲存今日紀錄</button>
-      <div class="hint">定好起床時間往回推 5 個循環＋15 分入睡緩衝＝就寢時間。睡「差」的日子：晨間 HIIT 跳過、肌力每動作少 1 組。</div>
+      <div class="hint">就寢 21:30（5 循環＝7.5h）、最晚 22:00；05:00 起床。睡「差」或 CPAP &lt;4h 的日子：肌力改保養 15 分（暖身內容×2 組），記「有活動」、不算出席。</div>
     </div>
   </div>
 
@@ -198,6 +201,7 @@
     <div id="wNote" class="hint"></div>
     <div id="exList"></div>
     <div class="cheer" id="cheer">🎉 今日課表完成！你又比昨天的自己強了一點 💪</div>
+    <label class="hint" id="minWrap" style="display:block"><input type="checkbox" id="inMin" onchange="setMin(this.checked)"> 今天只做 10 分鐘最低配（每 7 天限 1 次算出席）<span id="minCnt"></span></label>
     <button class="send" id="btnSend" onclick="sendToday()">📤 送出今日資料（晨間紀錄＋訓練打勾 → Obsidian）</button>
     <div class="hint" id="saveMsg"></div>
     <div class="hint" id="expHint"></div>
@@ -211,7 +215,7 @@
   <div class="tiles">
     <div class="tile"><div class="v" id="tAvg">—</div><div class="l">7 天均重 kg</div><div class="d" id="tAvgD"></div></div>
     <div class="tile"><div class="v" id="tGoal">—</div><div class="l">距目標 60kg</div><div class="pbar"><i id="tGoalBar"></i></div></div>
-    <div class="tile"><div class="v" id="tWk">—</div><div class="l">本週訓練</div></div>
+    <div class="tile"><div class="v" id="tWk">—</div><div class="l">本週必做（二四六日）</div></div>
   </div>
   <div class="card" style="position:relative">
     <div class="sec">Progress</div><h2>體重趨勢</h2>
@@ -225,7 +229,7 @@
   </div>
   <div class="card">
     <h2>紀錄（同圖表數據）</h2>
-    <table id="logTable"><thead><tr><th>日期</th><th>體重</th><th>睡眠</th><th>腰圍</th><th>訓練</th></tr></thead><tbody></tbody></table>
+    <table id="logTable"><thead><tr><th>日期</th><th>體重</th><th>睡眠</th><th>CPAP</th><th>腰圍</th><th>訓練</th></tr></thead><tbody></tbody></table>
     <button class="ghost" onclick="copyCSV()">📋 備份全部歷史 CSV（漏送多天／換手機時用）</button>
   </div>
 </div>
@@ -244,7 +248,7 @@
     <label>計畫開始日（W1 週一）</label><input type="date" id="inStart" onchange="saveCfg()">
     <label>Obsidian vault 名稱</label><input type="text" id="inVault" onchange="saveCfg()">
     <label>日誌檔路徑</label><input type="text" id="inPath" onchange="saveCfg()">
-    <div class="hint">完整計畫文件（動作導引卡＋教學影片＋營養）在 Obsidian 待看夾與 StanleyBrain repo。前三月徒手＋彈力繩在家做，第 4 個月起接喬山 Torus 5。</div>
+    <div class="hint">v2.1 晨練版（2026-09-14 W1）：每週 4 件必做＝二早下肢／四早上肢／六下午長課／日早快走＋量測，一三五休、晚上不排。W1 恢復週、W2–W8 徒手在家、W9（11-14）起週六改喬山 Torus 5。完整計畫在 StanleyBrain repo 家庭/健康/。</div>
   </div>
 </div>
 
@@ -257,21 +261,21 @@
 <script>
 /* ── 資料：課表定義（Phase 1/2 計畫文件為準） ── */
 const EX = {
-  sq:{n:'椅子輔助箱式深蹲→酒杯蹲',m:'3×8–10｜RPE6–7｜3-1-1｜休90s',c:'膝蓋推向小趾方向；碰椅即起、不坐死'},
+  sq:{n:'高箱蹲（椅面墊高）→酒杯蹲',m:'2–3×8–10｜RPE6–7｜3-1-1｜休90s',c:'碰椅即起、不蹲到底、脊椎中立；腰緊的早上換樓梯登階 2×8/側'},
   cp:{n:'Torus 5 坐姿胸推',m:'3×10–12｜RPE6–7｜3-1-1｜休75s',c:'肩胛後收下沉貼椅背；手肘貼身45°'},
   rw:{n:'Torus 5 坐姿划船',m:'3×10–12｜RPE6–7｜2-1-2｜休75s',c:'手肘往後口袋插；上身像釘住的門柱'},
-  rdl:{n:'彈力繩羅馬尼亞硬舉',m:'3×12｜RPE6｜3-1-1｜休60s',c:'屁股往後推、繩到小腿中段即停；胸口挺'},
+  rdl:{n:'彈力繩羅馬尼亞硬舉（只在週六下午）',m:'3×12｜RPE6｜3-1-1｜休60s',c:'屁股往後推、繩到小腿中段即停；胸口挺'},
   fp:{n:'彈力繩面拉',m:'2×15｜RPE5–6｜休45s',c:'先沉肩胛再拉；想像把繩子撕開'},
   db:{n:'死蟲式',m:'2×8/側｜慢而穩｜休30s',c:'腰全程貼地；下放時長吐氣'},
-  gb:{n:'臀橋（W3起單腳漸進）',m:'3×12–15｜RPE6–7｜頂端夾2秒｜休60s',c:'臀夾緊、肋骨收住；腰有感=做錯'},
+  gb:{n:'臀橋（W3起單腳漸進）',m:'2–3×12–15｜RPE6–7｜頂端夾2秒｜休60s',c:'臀夾緊、肋骨收住；腰有感=做錯'},
   lp:{n:'Torus 5 滑輪下拉（胸前）',m:'3×10–12｜RPE6–7｜2-1-2｜休75s',c:'手肘往骨盆拉；手掌只是鉤子'},
-  ip:{n:'上斜伏地挺身',m:'3×8–12｜RPE6–7｜3-1-1｜休60s',c:'身體一塊板；手肘往後45°不外開'},
+  ip:{n:'上斜伏地挺身',m:'2–3×8–12｜RPE6–7｜3-1-1｜休60s',c:'身體一塊板；手肘往後45°不外開'},
   pp:{n:'帕洛夫推壓',m:'2×10/側｜推出停3秒｜休45s',c:'核心抗旋轉撐住不動；推出時吐氣'},
   er:{n:'彈力繩肩外旋',m:'2×15/側｜RPE5｜休30s',c:'手肘夾毛巾當門軸；永遠用輕阻力'},
   bd:{n:'鳥狗式',m:'2×8/側｜頂端停3秒｜休30s',c:'腰上放一杯水不能灑；延伸不是抬高'},
   mc:{n:'麥吉爾捲腹',m:'2×6/側｜頂端停8秒',c:'頭肩只離地一張紙的高度'},
   spl:{n:'側棒式（膝著地起步）',m:'2×20–30s/側',c:'恥骨往前推、把地板推遠'},
-  ss:{n:'分腿蹲',m:'3×8–10/側｜RPE6–7｜休60s',c:'像電梯垂直下降；體重8成在前腳'},
+  ss:{n:'分腿蹲（W3 起）',m:'2–3×8/側｜RPE6–7｜休60s',c:'像電梯垂直下降；體重8成在前腳'},
   op:{n:'彈力繩斜上推45°',m:'3×10/側｜RPE6–7｜休60s',c:'往前上方45°牆角推；肩刺痛立停'},
   srdl:{n:'單腳羅馬尼亞硬舉',m:'3×10/側｜RPE6｜休60s',c:'褲頭兩邊一樣高；後腳趾指地板'},
   lc:{n:'Torus 5 腿彎舉',m:'3×10–12｜RPE6–7｜3秒慢放｜休60s',c:'肚子夾緊只有小腿動'},
@@ -279,12 +283,12 @@ const EX = {
   lr:{n:'彈力繩側平舉（拇指朝上）',m:'3×12–15｜RPE6｜休45s',c:'肩胛平面、舉到肩高即可'},
   td:{n:'滑輪三頭下壓',m:'3×12｜RPE6–7｜休45s',c:'手肘釘在身側'},
   bc:{n:'二頭彎舉（低滑輪/彈力繩）',m:'3×12｜RPE6–7｜休45s',c:'手肘不前移'},
-  bp:{n:'彈力繩站姿胸推',m:'3×10–12｜RPE6–7｜3-1-1｜休75s',c:'肩胛後收下沉；沿胸線推遠、肩前側痛換低磅數繩'},
-  br:{n:'彈力繩坐姿划船',m:'3×10–12｜RPE6–7｜2-1-2｜休75s',c:'手肘往後口袋插；上身像釘住的門柱'},
-  bpd:{n:'彈力繩跪姿下拉',m:'3×10–12｜RPE6–7｜2-1-2｜休75s',c:'手肘往骨盆拉；手掌只是鉤子'},
-  walk:{n:'快走',m:'30–40 分',c:'能講話但不能唱歌的速度'},
-  liss:{n:'LISS 快走',m:'45–60 分',c:'脂肪氧化主場，戴耳機聽 podcast'},
-  yoga:{n:'瑜珈舒緩＋量測日',m:'腰圍＋照片＋看七天均重',c:'讓身體休一天'},
+  bp:{n:'彈力繩站姿胸推',m:'2–3×10–12｜RPE6–7｜3-1-1｜休75s',c:'肩胛後收下沉；沿胸線推遠、肩前側痛換低磅數繩'},
+  br:{n:'彈力繩坐姿划船',m:'2–3×10–12｜RPE6–7｜2-1-2｜休75s',c:'手肘往後口袋插；上身像釘住的門柱'},
+  bpd:{n:'彈力繩跪姿下拉',m:'2–3×10–12｜RPE6–7｜2-1-2｜休75s',c:'手肘往骨盆拉；手掌只是鉤子'},
+  walk:{n:'戶外快走（Zone 2）',m:'週日 60 分主課／週六 20 分收尾',c:'能講話但不能唱歌的速度；週日早餐後、有日光'},
+  meas:{n:'量測日',m:'腰圍（肚臍水平）＋同角度照片＋看七天均重',c:'看趨勢不看單點'},
+  recov:{n:'舊套餐低強度版（早上 slot）',m:'最偉大拉伸×3 → 8 分鐘踏步／徒手深蹲慢版（不跳）→ 瑜珈舒緩 10',c:'這週練的是「早上這個時段」，不是內容'},
 };
 /* 新手導引卡：s=步驟 e=常見錯誤→修正口令 r=退階/進階 v=教學影片（皆經 oEmbed 查證） */
 const G = {
@@ -314,32 +318,32 @@ const G = {
  br:{s:"①坐地、雙腳前伸勾住彈力繩，雙手握兩端 ②胸口微挺、先肩胛後收啟動 ③手肘沿身側向後拉 ④2秒慢回",e:"聳肩→「肩胛往下再往後」；後仰借力→「上身像釘住的門柱」",r:"退階：更輕的繩｜進階：加磅數、頂端停2秒；第4個月接喬山 Torus 5 坐姿划船",v:[["🇹🇼 彈力帶划船完整教學｜健美女大生","https://www.youtube.com/watch?v=pb3d2qnVrrc"],["🇹🇼 坐姿划船緊實背部｜壯壯老師","https://www.youtube.com/watch?v=boEPSyEIq00"]]},
  bpd:{s:"①彈力繩固定於高處、跪姿雙手握兩端 ②胸口微挺 ③手肘往骨盆方向下拉至繩近鎖骨 ④2秒慢回",e:"往後躺硬拉→「上身固定、只有手臂下拉」；手臂主導→「想像手掌只是鉤子」",r:"退階：更輕的繩、站姿直臂下壓｜進階：加磅數、頂端停1秒；第4個月接喬山 Torus 5 滑輪下拉",v:[["🇹🇼 彈力繩下拉練背完整教學｜女力健身 Nuli","https://www.youtube.com/watch?v=OhquQspVpIs"],["🇺🇸 居家下拉固定設定＋常見錯誤｜Clench Fitness","https://www.youtube.com/watch?v=BEHY9CwiWPI"]]},
 };
+/* v2.1 晨練版（2026-09-10 紅隊定稿）：每週 4 件必做＝二早 LOW／四早 UPP／六下午長課／日早快走＋量測；一三五休、晚上不排 */
 const W = {
-  A:{name:'肌力 A｜蹲＋水平推拉（45分）',ex:['sq','bp','br','rdl','fp','db']},
-  B:{name:'肌力 B｜髖＋垂直拉（45分）',ex:['gb','bpd','ip','pp','er','bd']},
-  M:{name:'保養套餐｜護腰護肩（12分）',ex:['mc','spl','bd','er','fp']},
-  LOW:{name:'下肢＋核心日（45分）',ex:['sq','rdl','gb','db','pp']},
-  UPP:{name:'上肢推拉日（45分）',ex:['bp','ip','br','bpd','fp','er']},
-  L1:{name:'下肢 1（45分）',ex:['sq','lc','rdl','spl']},
-  U1:{name:'上肢 1｜推主導（45分）',ex:['cp','op','lp','fp']},
-  L2:{name:'下肢 2｜單邊（45分）',ex:['ss','srdl','gb','pp']},
-  U2:{name:'上肢 2｜拉主導（45分）',ex:['rw','ip','lp','er']},
-  AB1:{name:'＋腹肌專項（10分）',ex:['cc','spl']},
-  AB2:{name:'＋腹肌專項（10分）',ex:['db','pp']},
-  AR1:{name:'＋弱點優先（10分）',ex:['lr','td']},
-  AR2:{name:'＋弱點優先（10分）',ex:['bc','fp']},
-  WALK:{name:'低強度有氧',ex:['walk']},
-  LISS:{name:'LISS 有氧日',ex:['liss']},
-  REST:{name:'休息日',ex:['yoga']},
+  LOW:{name:'肌力 LOW｜下肢＋核心（早，25分）',ex:['sq','gb','ss','db','pp']},
+  UPP:{name:'肌力 UPP｜上肢推拉（早，25分）',ex:['ip','br','bp','bpd','fp']},
+  SAT:{name:'週六長課｜全身（下午，60–75分）',ex:['sq','rdl','ss','ip','br','fp','walk']},
+  SATGYM:{name:'週六機器日｜喬山 Torus 5（下午）',ex:['cp','lp','rw','lc','rdl','walk']},
+  SUN:{name:'週日｜戶外快走＋核心＋量測（早）',ex:['walk','spl','bd','meas']},
+  RECOV:{name:'恢復週｜早上 slot 舊套餐低強度版',ex:['recov']},
+  REST:{name:'休息日',ex:[]},
 };
-/* 週 → 每日課表鍵。dow: 0=日…6=六 */
-/* 肌力日固定二三五（二三接送空檔）：二=下肢、三=上肢（連續兩天不同肌群）、五=全身/交替 */
+/* 週 → 每日課表鍵。dow: 0=日…6=六。W1（含 W0 前奏）＝恢復週；W2–8 徒手；W9 起週六換喬山 */
 function schedule(wk){
-  if(wk<=12) return {1:['M'],2:['LOW'],3:['UPP'],4:['M'],5:[wk%2?'A':'B'],6:['WALK'],0:['REST']};
-  if(wk<=24) return {1:['M'],2:['L1'],3:['U1'],4:['M'],5:[wk%2?'L2':'U2'],6:['WALK'],0:['REST']};
-  return {1:['M'],2:['L1','AB1'],3:['U1','AR1'],4:['M'],5:wk%2?['L2','AB2']:['U2','AR2'],6:['LISS'],0:['REST']};
+  if(wk<=1) return {1:['REST'],2:['RECOV'],3:['REST'],4:['RECOV'],5:['REST'],6:['RECOV'],0:['SUN']};
+  return {1:['REST'],2:['LOW'],3:['REST'],4:['UPP'],5:['REST'],6:[wk>=9?'SATGYM':'SAT'],0:['SUN']};
 }
-const PHASE=w=>w<=12?'基礎鞏固期':w<=24?'肌力累積期':'分化專項期';
+const PHASE=w=>w<=1?'恢復週':w<=8?'徒手期':'喬山期';
+/* 每週 4 件必做的出席帳：LOW/UPP/SAT/SATGYM/SUN/RECOV 有打勾＝1 件；「最低配」每 7 天只有第 1 次算 */
+const MUST=['LOW','UPP','SAT','SATGYM','SUN','RECOV'];
+function weekDone(mon){ // mon: 該週週一 Date → {n, minUsed}
+  let n=0,minUsed=0;
+  for(let i=0;i<7;i++){const d=iso(new Date(+mon+i*864e5)),l=logs[d];
+    if(!l||!l.done||!Object.values(l.done).some(Boolean)||!MUST.includes((l.workout||'').split('+')[0]))continue;
+    if(l.min){minUsed++;if(minUsed>1)continue;}
+    n++;}
+  return {n,minUsed};
+}
 const QUOTES=[
  '你不是在減重，你是在把 10 年後的自己練回來。',
  '46 歲開始永遠不晚——晚的是明天才開始。',
@@ -359,9 +363,9 @@ const QUOTES=[
 ];
 /* ── 狀態 ── */
 const LS=localStorage;
-const cfg=JSON.parse(LS.getItem('cfg')||'{"start":"2026-08-31","vault":"StanleyInbox","path":"健身日誌/健身紀錄log.md"}');
+const cfg=JSON.parse(LS.getItem('cfg')||'{"start":"2026-09-14","vault":"StanleyInbox","path":"健身日誌/健身紀錄log.md"}');
 if(cfg.path==='健身日誌.md'){cfg.path='健身日誌/健身紀錄log.md';LS.setItem('cfg',JSON.stringify(cfg));} // vault 已改資料夾結構，自動遷移舊設定
-if(!LS.getItem('reset20260831')){cfg.start='2026-08-31';LS.setItem('cfg',JSON.stringify(cfg));LS.setItem('reset20260831','1');} // 一次性重啟：W1 週一改 2026-08-31（08-24 那次沒開跑、順延一週；跑一次就記住，之後在設定裡自己改仍有效）
+if(!LS.getItem('reset20260914')){cfg.start='2026-09-14';LS.setItem('cfg',JSON.stringify(cfg));LS.setItem('reset20260914','1');} // 一次性重啟：v2.1 晨練版 W1 週一＝2026-09-14（09-11～13 為 W0 前奏，自動套 W1 課表）
 const logs=JSON.parse(LS.getItem('logs')||'{}');   // {date:{w,s,wa,n,done,workout,sent}}
 const today=new Date(); today.setHours(0,0,0,0);
 const iso=d=>d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); // 本地時區，避免 UTC 差一天
@@ -371,7 +375,7 @@ const vDate=()=>new Date(VD+'T00:00:00');
 function setView(d){if(d===VD)return;VD=d;step1Open=null;fillStep1();renderToday();}
 function weekOf(d){const s=new Date(cfg.start+'T00:00:00');return Math.floor((d-s)/6048e5)+1}
 const wk=weekOf(today), dow=today.getDay();
-const isDeload=w=>w>0&&w%4===0;
+const isDeload=w=>w>=13&&(w-13)%4===0; // 前 8 週不減量（紅隊共識）；喬山期 W13 起每 4 週
 const SLPT={3:'😴 優',2:'🙂 普',1:'😪 差'};
 
 /* ── 今日頁 ── */
@@ -385,14 +389,13 @@ function streak(){
 }
 const DOWCH=['日','一','二','三','四','五','六'];
 /* 視覺資產對映（img/ 由 draw skill 生成） */
-const BANMAP={A:'strength',B:'strength',M:'core',LOW:'lower',UPP:'upper',L1:'lower',L2:'lower',U1:'upper',U2:'upper',
-              AB1:'core',AB2:'core',AR1:'upper',AR2:'upper',WALK:'cardio',LISS:'cardio',REST:'recovery'};
+const BANMAP={LOW:'lower',UPP:'upper',SAT:'strength',SATGYM:'strength',SUN:'cardio',RECOV:'recovery',REST:'recovery'};
 const ICMAP={sq:'squat',ss:'squat',rdl:'hinge',srdl:'hinge',gb:'bridge',cp:'press',ip:'press',
              bp:'press',br:'row',bpd:'pulldown',
              rw:'row',lp:'pulldown',mc:'core',db:'core',cc:'core',bd:'plank',spl:'plank',
              pp:'antirotation',er:'shoulder',fp:'shoulder',lr:'shoulder',lc:'legcurl',
-             td:'arms',bc:'arms',op:'overhead',walk:'walk',liss:'walk',yoga:'rest'};
-const TAG={A:'肌力',B:'肌力',M:'保養',LOW:'下肢',UPP:'上肢',L1:'下肢',U1:'上肢',L2:'下肢',U2:'上肢',WALK:'快走',LISS:'有氧',REST:'休'};
+             td:'arms',bc:'arms',op:'overhead',walk:'walk',meas:'rest',recov:'core'};
+const TAG={LOW:'下肢',UPP:'上肢',SAT:'長課',SATGYM:'喬山',SUN:'快走',RECOV:'恢復',REST:'休'};
 function renderStrip(){
   const mon=new Date(today);mon.setDate(mon.getDate()-((dow+6)%7));
   let h='';
@@ -409,6 +412,7 @@ function toggleStep1(){step1Open=true;renderStep1()}
 function fillStep1(){ // 檢視日期切換時，把該日已存資料帶進表單（未存則清空）
   const l=logs[VD]||{};
   document.getElementById('inW').value=l.w||'';
+  document.getElementById('inC').value=l.c||'';
   document.getElementById('inWa').value=l.wa||'';
   document.getElementById('inN').value=l.n||'';
   setSleep(l.s||0,l.s?document.querySelectorAll('#segS button')[3-l.s]:null);
@@ -419,8 +423,8 @@ function renderStep1(){
   const card=document.getElementById('card1');
   card.className='card'+((done&&!open)||(fut&&!open)?' collapsed':'');
   const l=logs[VD]||{};
-  document.getElementById('step1Sum').textContent=fut&&!done?'（未來日期，尚無紀錄）':(((l.w?l.w+' kg':'')+(l.s?'・'+SLPT[l.s]:'')||'')+'（點我展開修改）');
-  ['inW','inWa','inN'].forEach(i=>document.getElementById(i).disabled=fut);
+  document.getElementById('step1Sum').textContent=fut&&!done?'（未來日期，尚無紀錄）':(((l.w?l.w+' kg':'')+(l.s?'・'+SLPT[l.s]:'')+(l.c?'・CPAP '+l.c+'h':'')||'')+'（點我展開修改）');
+  ['inW','inC','inWa','inN'].forEach(i=>document.getElementById(i).disabled=fut);
   document.querySelectorAll('#segS button').forEach(b=>b.disabled=fut);
   document.getElementById('btnSave').disabled=fut;
 }
@@ -442,7 +446,17 @@ function renderToday(){
   const keys=dayKeys(vwk,vdow);
   document.getElementById('banner').style.backgroundImage="url('img/banner-"+(BANMAP[keys[0]]||'strength')+".jpg')";
   document.getElementById('wName').textContent=keys.map(k=>W[k].name).join(' ');
-  document.getElementById('wNote').textContent=isDeload(vwk)&&keys[0]!=='REST'?'減量週：全動作組數減半、阻力 −20%、RPE ≤6。照做，這是計畫的一部分。':'暖身：最偉大拉伸×3 → 開始。收操：瑜珈舒緩 10 分。';
+  const NOTE={LOW:'起床→廁所→量體重→溫檸檬鹽水→洗碗 10 分（挺直）→暖身 5 分（最偉大拉伸×3・鳥狗 1×6・肩外旋 1×15）→主訓 25→瑜珈舒緩 10。訓後 15 分內乳清 1 匙。時間到就結束、不補。',
+    UPP:'流程同週二。訓後 15 分內乳清 1 匙。肩前側刺痛立停。',
+    SAT:'午餐後 2 小時開始。暖身同平日；RDL 全程只在這天做。3 組起手。',
+    SATGYM:'午餐後 2 小時。永遠不做直立划船／頸後下拉；繩索對握、肩胛平面；胸推站調整後仍前肩痛→改繩索胸推。第一週磅數保守。',
+    SUN:'有早餐→早餐後出門；沒早餐→起床 1 小時內固定時間出門。戶外、有日光、能講話不能唱歌。回來量腰圍拍照。',
+    RECOV:'這週練的是「早上這個時段」。晚上不排。CPAP 時數每天抄。',
+    REST:'休。晚上想伸展就伸展、不記、不補。'};
+  const lv=logs[VD]||{}, fuse=(lv.s===1||(lv.c&&lv.c<4))&&['LOW','UPP','SAT','SATGYM'].includes(keys[0]);
+  const wn=document.getElementById('wNote');
+  wn.textContent=fuse?'⚠️ 保險絲：前晚睡眠差／CPAP <4h → 今天改保養 15 分（暖身內容×2 組），記「有活動」、不算肌力出席。':(isDeload(vwk)&&keys[0]!=='REST'?'減量週：組數減半、阻力 −20%、RPE ≤6。':NOTE[keys[0]]||'');
+  wn.style.color=fuse?'#ffd166':'';
   const st=(logs[VD]&&logs[VD].done)||{};
   const list=document.getElementById('exList');
   list.innerHTML='';
@@ -452,7 +466,7 @@ function renderToday(){
     const div=document.createElement('div');div.className='ex'+(d?' done':'');
     /* 漸進超負荷：記本次阻力/重量，placeholder 帶出最近一次的值 */
     let wtH='';
-    if(!['walk','liss','yoga'].includes(id)){
+    if(!['walk','meas','recov'].includes(id)){
       const cur=(logs[VD]&&logs[VD].wt&&logs[VD].wt[id])||'', last=lastWt(id);
       wtH='<input class="wt" value="'+esc(cur)+'" placeholder="'+esc(last?'上次：'+last:'阻力/重量')+'"'+(fut?' disabled':'')+' onchange="setWt(\''+id+'\',this.value)">';
     }
@@ -466,6 +480,10 @@ function renderToday(){
   document.getElementById('cheer').style.display=(items.length&&done===items.length)?'block':'none';
   const bs=document.getElementById('btnSend');
   bs.style.display=fut?'none':'';
+  const mw=document.getElementById('minWrap'), mon0=new Date(vd);mon0.setDate(mon0.getDate()-((vdow+6)%7));
+  mw.style.display=(!fut&&['LOW','UPP','SAT','SATGYM'].includes(keys[0]))?'block':'none';
+  document.getElementById('inMin').checked=!!(logs[VD]&&logs[VD].min);
+  document.getElementById('minCnt').textContent='（本週已用 '+weekDone(mon0).minUsed+'/1）';
   bs.textContent=(logs[VD]&&logs[VD].sent)?'✅ 已送出（再按會重送最新狀態）':(VD===TD?'📤 送出今日資料（晨間紀錄＋訓練打勾 → Obsidian）':'📤 送出 '+(vd.getMonth()+1)+'/'+vd.getDate()+' 資料 → Obsidian');
   const le=LS.getItem('lastExport'), eh=document.getElementById('expHint');
   if(!le){eh.style.color='';eh.textContent='💾 紀錄只存在這台裝置的瀏覽器裡，記得定期送 Obsidian 或複製 CSV 備份';}
@@ -512,6 +530,11 @@ function tick(id,v){
   if(v&&items.length&&items.every(i=>logs[VD].done[i]))burst();
   LS.setItem('logs',JSON.stringify(logs));renderToday();renderTrend();
 }
+function setMin(v){
+  if(VD>TD)return;
+  logs[VD]=logs[VD]||{};if(v)logs[VD].min=true;else delete logs[VD].min;
+  LS.setItem('logs',JSON.stringify(logs));renderToday();renderTrend();
+}
 let _sleep=0;
 function setSleep(v,btn){
   _sleep=v;
@@ -524,6 +547,7 @@ function saveLog(){
   logs[VD]=logs[VD]||{};
   const g=i=>document.getElementById(i).value;
   if(g('inW'))logs[VD].w=+g('inW');
+  if(g('inC'))logs[VD].c=+g('inC');
   if(_sleep)logs[VD].s=_sleep;
   if(g('inWa'))logs[VD].wa=+g('inWa');
   if(g('inN'))logs[VD].n=g('inN');
@@ -540,8 +564,8 @@ function sendToday(){
   const keys=dayKeys(weekOf(vd),vd.getDay());
   let items=[];keys.forEach(k=>items=items.concat(W[k].ex));
   const done=items.filter(i=>l.done&&l.done[i]).length;
-  const note=((l.n||'')+(items.length?(' 完成'+done+'/'+items.length):'')).trim();
-  const line=[VD,l.w||'',(l.workout||keys.join('+')),l.s||'',l.wa||'',note].join(',');
+  const note=((l.n||'')+(items.length?(' 完成'+done+'/'+items.length):'')+(l.min?' 最低配':'')).trim();
+  const line=[VD,l.w||'',(l.workout||keys.join('+')),l.s||'',l.c||'',l.wa||'',note].join(',');
   logs[VD]=l;l.sent=true;LS.setItem('logs',JSON.stringify(logs));
   LS.setItem('lastExport',TD);
   renderToday();
@@ -561,19 +585,16 @@ function renderTrend(){
   const s=series();
   const tb=document.querySelector('#logTable tbody');tb.innerHTML='';
   Object.keys(logs).sort().reverse().slice(0,30).forEach(d=>{const l=logs[d];
-    tb.insertAdjacentHTML('beforeend','<tr><td class="num">'+d.slice(5)+'</td><td class="num">'+(l.w||'—')+'</td><td>'+(SLPT[l.s]||'—')+'</td><td class="num">'+(l.wa||'—')+'</td><td>'+(l.done&&Object.values(l.done).some(Boolean)?'✅':'—')+'</td></tr>');});
+    tb.insertAdjacentHTML('beforeend','<tr><td class="num">'+d.slice(5)+'</td><td class="num">'+(l.w||'—')+'</td><td>'+(SLPT[l.s]||'—')+'</td><td class="num">'+(l.c||'—')+'</td><td class="num">'+(l.wa||'—')+'</td><td>'+(l.done&&Object.values(l.done).some(Boolean)?(l.min?'🔸':'✅'):'—')+'</td></tr>');});
   const a7=s.length?avg7(s,s.length-1):null;
   document.getElementById('tAvg').textContent=a7?a7.toFixed(1):'—';
   document.getElementById('tGoal').textContent=a7?(a7-60).toFixed(1):'—';
-  const START_W=70.6; // 計畫起點體重（2026-08-24 重啟，08-20 實量）——70.6→60 的旅程進度條
+  const START_W=71.0; // 計畫起點體重（v2.1 重啟：2026-09-03 七天均重）——71→60 的旅程進度條
   document.getElementById('tGoalBar').style.width=a7?Math.max(0,Math.min(100,100*(START_W-a7)/(START_W-60)))+'%':'0';
   if(s.length>7){const prev=avg7(s,s.length-2);const d=a7-prev;
     document.getElementById('tAvgD').textContent=(d<=0?'↓ ':'↑ ')+Math.abs(d).toFixed(2);}
   const mon=new Date(today);mon.setDate(mon.getDate()-((dow+6)%7));
-  let n=0,target=3;
-  for(let i=0;i<7;i++){const d=iso(new Date(+mon+i*864e5));
-    if(logs[d]&&logs[d].done&&Object.values(logs[d].done).some(Boolean)&&!['REST','WALK','LISS','M'].includes((logs[d].workout||'').split('+')[0]))n++;}
-  document.getElementById('tWk').textContent=n+'/'+target;
+  document.getElementById('tWk').textContent=weekDone(mon).n+'/4';
   drawChart(s);
 }
 function drawChart(s){
@@ -614,10 +635,10 @@ function drawChart(s){
 })();
 /* ── 匯出 ── */
 function csv(){
-  let out='date,weight_kg,workout,sleep_score,waist_cm,note,resistance\n';
+  let out='date,weight_kg,workout,sleep_score,cpap_hours,waist_cm,note,resistance\n';
   Object.keys(logs).sort().forEach(d=>{const l=logs[d];
     const wt=l.wt?Object.entries(l.wt).map(([k,v])=>k+'='+v).join(';').replace(/,/g,'；'):'';
-    out+=[d,l.w||'',l.workout||'',l.s||'',l.wa||'',(l.n||'').replace(/,/g,'；'),wt].join(',')+'\n';});
+    out+=[d,l.w||'',l.workout||'',l.s||'',l.c||'',l.wa||'',((l.n||'')+(l.min?' 最低配':'')).replace(/,/g,'；'),wt].join(',')+'\n';});
   return out;
 }
 function copyCSV(){navigator.clipboard.writeText(csv()).then(()=>{LS.setItem('lastExport',TD);renderToday();alert('已複製 '+Object.keys(logs).length+' 天完整紀錄。漏送多天→貼進 Obsidian 健身日誌補齊；換手機→這就是搬家包。')})}
@@ -625,8 +646,7 @@ function copyCSV(){navigator.clipboard.writeText(csv()).then(()=>{LS.setItem('la
 function renderPlan(){
   const w=+document.getElementById('inWk').value||Math.max(wk,1);
   const sc=schedule(w),names=['日','一','二','三','四','五','六'];
-  const cw=Math.max(wk,1), blockStart=cw<=12?1:cw<=24?13:25, blockEnd=cw<=12?12:cw<=24?24:52;
-  let h='<div class="wk">📍 今天＝'+(wk<1?('計畫 '+cfg.start+' 開跑（現在是暖身預備週）'):('第 '+wk+' 週｜'+PHASE(wk)+'（此階段第 '+(cw-blockStart+1)+' / '+(blockEnd-blockStart+1)+' 週）'+(isDeload(wk)?'｜🔋 本週減量':'')))+'——第一頁每天自動跟著這裡的進度出課表</div>';
+  let h='<div class="wk">📍 今天＝'+(wk<1?('W0 前奏（W1 '+cfg.start+' 開跑，先照恢復週課表）'):('第 '+wk+' 週｜'+PHASE(wk)+(isDeload(wk)?'｜🔋 本週減量':'')))+'——第一頁每天自動跟著這裡的進度出課表</div>';
   h+='<div class="wk">第 '+w+' 週｜'+PHASE(w)+(isDeload(w)?'｜🔋 減量週':'')+'</div>';
   [1,2,3,4,5,6,0].forEach(d=>{
     h+='<div class="ex"><div><div class="n">週'+names[d]+'</div><div class="m">'+sc[d].map(k=>W[k].name).join('｜')+'</div><div class="c">'+sc[d].flatMap(k=>W[k].ex).map(i=>EX[i].n).join('、')+'</div></div></div>';});
