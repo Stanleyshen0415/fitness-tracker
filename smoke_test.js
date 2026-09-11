@@ -22,7 +22,11 @@ global.navigator = { clipboard:{ writeText:()=>Promise.resolve() } };
 global.location = { href:'', reload(){} };
 global.alert = ()=>{};
 
-const src = fs.readFileSync('index.html','utf-8').match(/<script>([\s\S]*)<\/script>/)[1];
+// ponytail: 釘死 today＝2026-11-04（預設 cfg.start 下 W8 週三 REST），斷言不再隨真實日期漂移；頁面那行改寫時這裡同步改
+const PIN="const today=new Date();";
+let src = fs.readFileSync('index.html','utf-8').match(/<script>([\s\S]*)<\/script>/)[1];
+if(!src.includes(PIN)) throw new Error('找不到 today 宣告，無法釘死時間');
+src = src.replace(PIN,"const today=new Date('2026-11-04T00:00:00');");
 const tests = `
 const assert=(c,m)=>{if(!c)throw new Error('ASSERT FAILED: '+m)};
 const A = (w,d)=>dayKeys(w,d).join('+');
@@ -75,15 +79,13 @@ assert(rng.map(x=>x[0]).join()==='2026-09-23,2026-09-24,2026-09-26' && rng[1][1]
 assert(logsBetween('2030-01-01','2030-01-02').length===0, 'logsBetween 無資料回空');
 assert(KPI.MUST_TOTAL===24&&KPI.MUST_PASS===20&&KPI.FUSE_LT===3&&KPI.CPAP_MIN===4&&KPI.W_FROM===1&&KPI.W_TO===6, '門檻常數＝定稿：24／≥20／<3／CPAP 4h／W1–W6');
 setMin(false); assert(!logs[VD].min, 'setMin 清除');
-// 02 週曆條只亮必做日：本週（含 TD）塞 REST 日打勾＋LOW 日打勾，只有 LOW 那格含 did
-{const m=new Date(today);m.setDate(m.getDate()-((dow+6)%7));const k=i=>iso(new Date(+m+i*864e5));
- const bak={};[k(1),k(2)].forEach(d=>bak[d]=logs[d]);
- logs[k(2)]={done:{db:true},workout:'REST'}; logs[k(1)]={done:{sq:true},workout:'LOW',min:true};
+// 02 週曆條只亮必做日：today 釘在 2026-11-04，本週＝11-02（一）～11-08（日）；塞週三 REST 打勾＋週二 LOW 打勾，只有 LOW 那格含 did
+{logs['2026-11-04']={done:{db:true},workout:'REST'}; logs['2026-11-03']={done:{sq:true},workout:'LOW',min:true};
  renderStrip(); const cells=document.getElementById('wstrip').innerHTML.split('<div ').slice(1);
  assert(cells.length===7 && cells.filter(c=>c.includes(' did')).length===1 && cells[1].includes(' did') && cells[1].includes('✓ '), '週曆條只有 LOW（最低配）那格亮: '+cells.map(c=>c.includes(' did')?1:0).join(''));
- [k(1),k(2)].forEach(d=>{if(bak[d])logs[d]=bak[d];else delete logs[d]});}
-// 03 W1–W6 必做累計磚：cfg.start=2026-09-14 為 W1 週一；W2 沿用上面 weekDone 案例（3 件）
-{const put=(d,l)=>logs[d]=l;
+ delete logs['2026-11-03']; delete logs['2026-11-04'];}
+// 03 W1–W6 必做累計磚：cfg.start=2026-09-14 為 W1 週一；W2 沿用上面 weekDone 案例（3 件）；灌入的 log 測完清除
+{const ds=[], put=(d,l)=>{ds.push(d);logs[d]=l};
  put('2026-09-15',{done:{sq:true},workout:'LOW'}); put('2026-09-17',{done:{ip:true},workout:'UPP',min:true}); put('2026-09-19',{done:{sq:true},workout:'SAT',min:true}); // W1：最低配兩次只算 1 → 2
  ['2026-09-29','2026-10-01','2026-10-03','2026-10-04'].forEach((d,i)=>put(d,{done:{sq:true},workout:['LOW','UPP','SAT','SUN'][i]})); // W3：4
  put('2026-10-06',{done:{db:true},workout:'REST'}); // W4：REST 灌水 → 0
@@ -95,7 +97,7 @@ setMin(false); assert(!logs[VD].min, 'setMin 清除');
  assert(document.getElementById('tWkD').textContent==='出席率 46%' && document.getElementById('tWkL').textContent==='W1–W6 必做（門檻 20）', '累計磚副標與出席率: '+document.getElementById('tWkL').textContent+' / '+document.getElementById('tWkD').textContent);
  const st=cfg.start; cfg.start='2030-01-07'; renderTrend(); // 今天在 W0：六週全在未來 → 0/24
  assert(document.getElementById('tWk').textContent==='0/24' && document.getElementById('tWkD').textContent==='出席率 0%', 'W0 時累計磚 0/24、0%');
- cfg.start=st;}
+ cfg.start=st; ds.forEach(d=>delete logs[d]);}
 // 04 CPAP 平均磚：把 W1 週一改成 2026-09-07（09-08 c:5.2 落在 W1）；W0 09-05 不算、W1 沒填的 09-10 不當 0
 {const st=cfg.start; cfg.start='2026-09-07';
  logs['2026-09-05']={c:9}; logs['2026-09-07']={c:6}; logs['2026-09-09']={c:7}; logs['2026-09-10']={w:70};
@@ -104,21 +106,24 @@ setMin(false); assert(!logs[VD].min, 'setMin 清除');
  assert(t('tCpapL').textContent==='CPAP 平均 h（門檻 4）', 'CPAP 磚副標: '+t('tCpapL').textContent);
  logs['2026-09-07'].c=2; logs['2026-09-09'].c=3; renderTrend();
  assert(t('tCpap').textContent==='3.4' && t('tCpapD').textContent==='未達標' && t('tCpapD').style.color==='var(--orange)', 'CPAP <4 未達標橘色, got '+t('tCpap').textContent);
+ logs['2026-09-07'].c=3.9; logs['2026-09-09'].c=2.8; renderTrend(); // (3.9+5.2+2.8)/3=3.97 → 顯示 4.0 就要判達標，不能畫面 4.0 卻標未達標
+ assert(t('tCpap').textContent==='4.0' && t('tCpapD').textContent==='達標', 'CPAP 達標用 toFixed(1) 後的值判定, got '+t('tCpap').textContent+' '+t('tCpapD').textContent);
  cfg.start='2030-01-07'; renderTrend();
  assert(t('tCpap').textContent==='—' && t('tCpapD').textContent==='', 'CPAP 全空顯示 —, got '+t('tCpap').textContent);
  ['2026-09-05','2026-09-07','2026-09-09','2026-09-10'].forEach(d=>delete logs[d]); cfg.start=st;}
-// 05 今日頁連續兩週保險絲：cfg.start 設成「本週週一 −14 天」→ 今天在 W3，前兩個完整週＝W1、W2；不改 today
-{const m=new Date(today);m.setDate(m.getDate()-((dow+6)%7));const k=i=>iso(new Date(+m+i*864e5));
- const ks=[-13,-11,-9,-8,-6,-4,-3,-2], bak={}; ks.forEach(i=>bak[k(i)]=logs[k(i)]); const st=cfg.start;
- const put=(i,w)=>logs[k(i)]={done:{sq:true},workout:w}, wn=()=>document.getElementById('wNote').textContent, F='⚠️ 連續兩週必做 <3 → 砍成 3 件、查睡眠與 CPAP';
- cfg.start=k(-14); put(-13,'LOW'); put(-11,'UPP'); put(-6,'LOW'); put(-2,'SAT'); // W1：2、W2：2
- renderToday(); assert(wn().startsWith(F+'\\n'), '前兩個完整週各 2 件 → 觸發，且原本提示保留: '+wn());
- VD=k(-13); renderToday(); assert(wn().startsWith(F), '檢視過去日期仍以今天為基準'); VD=TD;
- put(-9,'SAT'); put(-8,'SUN'); delete logs[k(-2)]; // W1：4、W2：1
+// 05 今日頁連續兩週保險絲：today 釘在 2026-11-04（週三）；cfg.start=2026-10-19 → 今天在 W3，前兩個完整週＝W1（10-19～）、W2（10-26～）
+{const st=cfg.start, ds=[], put=(d,w)=>{ds.push(d);logs[d]={done:{sq:true},workout:w}}, wn=()=>document.getElementById('wNote').textContent, F='⚠️ 連續兩週必做 <3 → 砍成 3 件、查睡眠與 CPAP';
+ cfg.start='2026-10-19'; put('2026-10-20','LOW'); put('2026-10-22','UPP'); put('2026-10-27','LOW'); put('2026-10-31','SAT'); // W1：2、W2：2
+ renderToday(); assert(dayKeys(weekOf(today),dow)[0]==='REST' && wn().startsWith(F+'\\n'), '今天是 REST 日也顯示；前兩個完整週各 2 件 → 觸發，且原本提示保留: '+wn());
+ put('2026-11-03','LOW'); put('2026-11-05','UPP'); put('2026-11-07','SAT'); put('2026-11-08','SUN'); // 本週進行中 4 件
+ renderToday(); assert(wn().startsWith(F+'\\n'), '本週進行中的資料不影響判定: '+wn());
+ VD='2026-11-03'; logs[VD].s=1; renderToday(); assert(wn().startsWith(F+'\\n⚠️ 保險絲：'), '與當天保險絲獨立、兩句並存: '+wn());
+ VD='2026-10-20'; renderToday(); assert(wn().startsWith(F), '檢視過去日期仍以今天為基準'); VD=TD;
+ put('2026-10-24','SAT'); put('2026-10-25','SUN'); delete logs['2026-10-31']; // W1：4、W2：1
  renderToday(); assert(!wn().includes(F), '一週 4 一週 1 → 不觸發');
- cfg.start=k(-7); put(-6,'LOW'); delete logs[k(-2)]; // 今天在 W2：前一週 W1 是 2 件，再前一週落在 W0
+ cfg.start='2026-10-26'; // 今天在 W2：前一週 W1（10-26～）是 1 件，再前一週落在 W0
  renderToday(); assert(!wn().includes(F), '前一週落在 W0 → 不觸發');
- ks.forEach(i=>{if(bak[k(i)])logs[k(i)]=bak[k(i)];else delete logs[k(i)]}); cfg.start=st;}
+ ds.forEach(d=>delete logs[d]); cfg.start=st;}
 VD=TD;
 // 導引卡：除有氧/休息外每動作都要有卡+至少1支影片
 Object.keys(EX).filter(k=>!['walk','meas'].includes(k)).forEach(k=>{

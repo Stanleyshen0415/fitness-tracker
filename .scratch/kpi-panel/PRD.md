@@ -143,3 +143,10 @@ Stanley 的計畫成不成立，定稿寫得很清楚：W1–W6 共 24 件必做
 - T3 與 T5 都依賴 T1 的週函式，T4 只依賴日期範圍函式。
 - 今天（2026-09-11）仍在 W0，累計磚與保險絲在真機上會是 0/24 與不觸發，這是正確行為，不是 bug。
 - 定稿出處：§7 W1–W6 列（24 件 ≥20）、§7 W7 列（CPAP 回顧）、§9 第 7 項（週曆條改以必做計）。
+
+## Follow-up
+
+收版 code review（2026-09-11）留下、刻意不在本輪做的兩條：
+
+- **抽 `mondayOf(d)`**：「某日所屬週一」算式在 `renderStrip`、`renderToday`（`monT`）、`mon0` 三處各寫一次。下次再有人要算週一時抽成一個 helper，三處改呼叫；不為抽而抽。
+- **命名**：`fuse2`、`N`、`cp`、`ca`、`cd`、`monT` 看不出意思（`fuse2` 完全看不出「連續兩週」）。下次動到 `renderToday`／`renderTrend` 那幾行時順手改名，例如 `fuseTwoWeeks`、`mustTotal`、`cpapHours`／`cpapAvg`／`cpapDesc`、`thisMonday`。
