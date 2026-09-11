@@ -66,6 +66,14 @@ logs['2026-09-26']={done:{sq:true},workout:'SAT'};
 logs['2026-09-27']={done:{walk:true},workout:'SUN'};
 logs['2026-09-23']={done:{sq:true},workout:'REST'};
 const wd=weekDone(mon); assert(wd.n===3&&wd.minUsed===2, '必做帳：2 最低配只算 1 → 3/4, got '+JSON.stringify(wd));
+// 01 共用 helper：某日是否計入必做（不含最低配扣抵）、日期範圍取 logs、門檻常數
+assert(mustDone(logs['2026-09-22'])===true && mustDone(logs['2026-09-26'])===true, 'mustDone：必做日有勾（含最低配）→ true');
+assert(mustDone(logs['2026-09-23'])===false, 'mustDone：REST 日打勾不算');
+assert(mustDone({workout:'LOW',done:{sq:false}})===false && mustDone(undefined)===false, 'mustDone：沒勾／無紀錄 → false');
+const rng=logsBetween('2026-09-23','2026-09-26');
+assert(rng.map(x=>x[0]).join()==='2026-09-23,2026-09-24,2026-09-26' && rng[1][1]===logs['2026-09-24'], 'logsBetween 含邊界、排序、回 [日期,log]: '+JSON.stringify(rng.map(x=>x[0])));
+assert(logsBetween('2030-01-01','2030-01-02').length===0, 'logsBetween 無資料回空');
+assert(KPI.MUST_TOTAL===24&&KPI.MUST_PASS===20&&KPI.FUSE_LT===3&&KPI.CPAP_MIN===4&&KPI.W_FROM===1&&KPI.W_TO===6, '門檻常數＝定稿：24／≥20／<3／CPAP 4h／W1–W6');
 setMin(false); assert(!logs[VD].min, 'setMin 清除');
 VD=TD;
 // 導引卡：除有氧/休息外每動作都要有卡+至少1支影片

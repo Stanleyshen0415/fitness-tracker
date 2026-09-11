@@ -335,10 +335,14 @@ function schedule(wk){
 const PHASE=w=>w<1?'W0 前奏':w<=8?'徒手期':'喬山期';
 /* 每週 4 件必做的出席帳：LOW/UPP/SAT/SATGYM/SUN 有打勾＝1 件；「最低配」每 7 天只有第 1 次算 */
 const MUST=['LOW','UPP','SAT','SATGYM','SUN'];
+/* 定稿門檻（§7）集中放：W1–W6 共 24 件必做、≥20 計畫成立；連續兩個完整週各 <3 → 保險絲；CPAP 平均 ≥4h */
+const KPI={MUST_TOTAL:24,MUST_PASS:20,FUSE_LT:3,CPAP_MIN:4,W_FROM:1,W_TO:6};
+const mustDone=l=>!!(l&&l.done&&Object.values(l.done).some(Boolean)&&MUST.includes((l.workout||'').split('+')[0])); // 該日計入必做；最低配扣抵是週層級的事，在 weekDone
+const logsBetween=(a,b)=>Object.keys(logs).filter(d=>d>=a&&d<=b).sort().map(d=>[d,logs[d]]); // 起訖含；ISO 字串直接比大小
 function weekDone(mon){ // mon: 該週週一 Date → {n, minUsed}
   let n=0,minUsed=0;
-  for(let i=0;i<7;i++){const d=iso(new Date(+mon+i*864e5)),l=logs[d];
-    if(!l||!l.done||!Object.values(l.done).some(Boolean)||!MUST.includes((l.workout||'').split('+')[0]))continue;
+  for(let i=0;i<7;i++){const l=logs[iso(new Date(+mon+i*864e5))];
+    if(!mustDone(l))continue;
     if(l.min){minUsed++;if(minUsed>1)continue;}
     n++;}
   return {n,minUsed};
