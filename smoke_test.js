@@ -96,6 +96,17 @@ setMin(false); assert(!logs[VD].min, 'setMin 清除');
  const st=cfg.start; cfg.start='2030-01-07'; renderTrend(); // 今天在 W0：六週全在未來 → 0/24
  assert(document.getElementById('tWk').textContent==='0/24' && document.getElementById('tWkD').textContent==='出席率 0%', 'W0 時累計磚 0/24、0%');
  cfg.start=st;}
+// 04 CPAP 平均磚：把 W1 週一改成 2026-09-07（09-08 c:5.2 落在 W1）；W0 09-05 不算、W1 沒填的 09-10 不當 0
+{const st=cfg.start; cfg.start='2026-09-07';
+ logs['2026-09-05']={c:9}; logs['2026-09-07']={c:6}; logs['2026-09-09']={c:7}; logs['2026-09-10']={w:70};
+ renderTrend(); const t=id=>document.getElementById(id);
+ assert(t('tCpap').textContent==='6.1' && t('tCpapD').textContent==='達標' && t('tCpapD').style.color==='', 'CPAP 平均只取 W1 有填日 (6+5.2+7)/3=6.1 達標, got '+t('tCpap').textContent+' '+t('tCpapD').textContent);
+ assert(t('tCpapL').textContent==='CPAP 平均 h（門檻 4）', 'CPAP 磚副標: '+t('tCpapL').textContent);
+ logs['2026-09-07'].c=2; logs['2026-09-09'].c=3; renderTrend();
+ assert(t('tCpap').textContent==='3.4' && t('tCpapD').textContent==='未達標' && t('tCpapD').style.color==='var(--orange)', 'CPAP <4 未達標橘色, got '+t('tCpap').textContent);
+ cfg.start='2030-01-07'; renderTrend();
+ assert(t('tCpap').textContent==='—' && t('tCpapD').textContent==='', 'CPAP 全空顯示 —, got '+t('tCpap').textContent);
+ ['2026-09-05','2026-09-07','2026-09-09','2026-09-10'].forEach(d=>delete logs[d]); cfg.start=st;}
 VD=TD;
 // 導引卡：除有氧/休息外每動作都要有卡+至少1支影片
 Object.keys(EX).filter(k=>!['walk','meas'].includes(k)).forEach(k=>{

@@ -217,6 +217,9 @@
     <div class="tile"><div class="v" id="tGoal">—</div><div class="l">距目標 60kg</div><div class="pbar"><i id="tGoalBar"></i></div></div>
     <div class="tile"><div class="v" id="tWk">—</div><div class="l" id="tWkL"></div><div class="d" id="tWkD"></div></div>
   </div>
+  <div class="tiles" style="margin-top:10px">
+    <div class="tile"><div class="v" id="tCpap">—</div><div class="l" id="tCpapL"></div><div class="d" id="tCpapD"></div></div>
+  </div>
   <div class="card" style="position:relative">
     <div class="sec">Progress</div><h2>體重趨勢</h2>
     <div class="legend">
@@ -601,6 +604,13 @@ function renderTrend(){
   document.getElementById('tWk').textContent=N+'/'+KPI.MUST_TOTAL;
   document.getElementById('tWkL').textContent='W'+KPI.W_FROM+'–W'+KPI.W_TO+' 必做（門檻 '+KPI.MUST_PASS+'）';
   document.getElementById('tWkD').textContent='出席率 '+Math.round(N/KPI.MUST_TOTAL*100)+'%';
+  /* CPAP 平均：W1 週一到今天，只算有填（>0）的日子，忘記填不當 0；今天在 W0 時範圍空 → — */
+  const cp=logsBetween(cfg.start,TD).map(x=>+x[1].c).filter(c=>c>0);
+  const ca=cp.length?cp.reduce((a,b)=>a+b)/cp.length:null;
+  document.getElementById('tCpap').textContent=ca?ca.toFixed(1):'—';
+  document.getElementById('tCpapL').textContent='CPAP 平均 h（門檻 '+KPI.CPAP_MIN+'）';
+  const cd=document.getElementById('tCpapD');cd.textContent=ca?(ca>=KPI.CPAP_MIN?'達標':'未達標'):'';
+  cd.style.color=ca&&ca<KPI.CPAP_MIN?'var(--orange)':''; // 未達標橘、達標沿用 .d 預設 teal
   drawChart(s);
 }
 function drawChart(s){
