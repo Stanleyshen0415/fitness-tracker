@@ -82,6 +82,20 @@ setMin(false); assert(!logs[VD].min, 'setMin 清除');
  renderStrip(); const cells=document.getElementById('wstrip').innerHTML.split('<div ').slice(1);
  assert(cells.length===7 && cells.filter(c=>c.includes(' did')).length===1 && cells[1].includes(' did') && cells[1].includes('✓ '), '週曆條只有 LOW（最低配）那格亮: '+cells.map(c=>c.includes(' did')?1:0).join(''));
  [k(1),k(2)].forEach(d=>{if(bak[d])logs[d]=bak[d];else delete logs[d]});}
+// 03 W1–W6 必做累計磚：cfg.start=2026-09-14 為 W1 週一；W2 沿用上面 weekDone 案例（3 件）
+{const put=(d,l)=>logs[d]=l;
+ put('2026-09-15',{done:{sq:true},workout:'LOW'}); put('2026-09-17',{done:{ip:true},workout:'UPP',min:true}); put('2026-09-19',{done:{sq:true},workout:'SAT',min:true}); // W1：最低配兩次只算 1 → 2
+ ['2026-09-29','2026-10-01','2026-10-03','2026-10-04'].forEach((d,i)=>put(d,{done:{sq:true},workout:['LOW','UPP','SAT','SUN'][i]})); // W3：4
+ put('2026-10-06',{done:{db:true},workout:'REST'}); // W4：REST 灌水 → 0
+ put('2026-10-13',{done:{sq:true},workout:'LOW'}); // W5：1
+ put('2026-10-25',{done:{walk:true},workout:'SUN'}); // W6：1
+ put('2026-10-27',{done:{sq:true},workout:'LOW'}); put('2026-09-13',{done:{walk:true},workout:'SUN'}); // W7／W0：不計
+ renderTrend();
+ assert(document.getElementById('tWk').textContent==='11/24', '累計磚 2+3+4+0+1+1=11/24, got '+document.getElementById('tWk').textContent);
+ assert(document.getElementById('tWkD').textContent==='出席率 46%' && document.getElementById('tWkL').textContent==='W1–W6 必做（門檻 20）', '累計磚副標與出席率: '+document.getElementById('tWkL').textContent+' / '+document.getElementById('tWkD').textContent);
+ const st=cfg.start; cfg.start='2030-01-07'; renderTrend(); // 今天在 W0：六週全在未來 → 0/24
+ assert(document.getElementById('tWk').textContent==='0/24' && document.getElementById('tWkD').textContent==='出席率 0%', 'W0 時累計磚 0/24、0%');
+ cfg.start=st;}
 VD=TD;
 // 導引卡：除有氧/休息外每動作都要有卡+至少1支影片
 Object.keys(EX).filter(k=>!['walk','meas'].includes(k)).forEach(k=>{

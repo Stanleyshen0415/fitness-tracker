@@ -215,7 +215,7 @@
   <div class="tiles">
     <div class="tile"><div class="v" id="tAvg">—</div><div class="l">7 天均重 kg</div><div class="d" id="tAvgD"></div></div>
     <div class="tile"><div class="v" id="tGoal">—</div><div class="l">距目標 60kg</div><div class="pbar"><i id="tGoalBar"></i></div></div>
-    <div class="tile"><div class="v" id="tWk">—</div><div class="l">本週必做（二四六日）</div></div>
+    <div class="tile"><div class="v" id="tWk">—</div><div class="l" id="tWkL"></div><div class="d" id="tWkD"></div></div>
   </div>
   <div class="card" style="position:relative">
     <div class="sec">Progress</div><h2>體重趨勢</h2>
@@ -595,8 +595,12 @@ function renderTrend(){
   document.getElementById('tGoalBar').style.width=a7?Math.max(0,Math.min(100,100*(START_W-a7)/(START_W-60)))+'%':'0';
   if(s.length>7){const prev=avg7(s,s.length-2);const d=a7-prev;
     document.getElementById('tAvgD').textContent=(d<=0?'↓ ':'↑ ')+Math.abs(d).toFixed(2);}
-  const mon=new Date(today);mon.setDate(mon.getDate()-((dow+6)%7));
-  document.getElementById('tWk').textContent=weekDone(mon).n+'/4';
+  /* W1–W6 必做累計：cfg.start＝W1 週一，逐週 weekDone 加總；W0 沒紀錄自然 0，W7 之後不在範圍自然定格 */
+  const w1=new Date(cfg.start+'T00:00:00');let N=0;
+  for(let w=KPI.W_FROM;w<=KPI.W_TO;w++)N+=weekDone(new Date(+w1+(w-1)*6048e5)).n;
+  document.getElementById('tWk').textContent=N+'/'+KPI.MUST_TOTAL;
+  document.getElementById('tWkL').textContent='W'+KPI.W_FROM+'–W'+KPI.W_TO+' 必做（門檻 '+KPI.MUST_PASS+'）';
+  document.getElementById('tWkD').textContent='出席率 '+Math.round(N/KPI.MUST_TOTAL*100)+'%';
   drawChart(s);
 }
 function drawChart(s){
