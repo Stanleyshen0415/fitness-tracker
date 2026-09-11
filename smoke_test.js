@@ -107,6 +107,18 @@ setMin(false); assert(!logs[VD].min, 'setMin 清除');
  cfg.start='2030-01-07'; renderTrend();
  assert(t('tCpap').textContent==='—' && t('tCpapD').textContent==='', 'CPAP 全空顯示 —, got '+t('tCpap').textContent);
  ['2026-09-05','2026-09-07','2026-09-09','2026-09-10'].forEach(d=>delete logs[d]); cfg.start=st;}
+// 05 今日頁連續兩週保險絲：cfg.start 設成「本週週一 −14 天」→ 今天在 W3，前兩個完整週＝W1、W2；不改 today
+{const m=new Date(today);m.setDate(m.getDate()-((dow+6)%7));const k=i=>iso(new Date(+m+i*864e5));
+ const ks=[-13,-11,-9,-8,-6,-4,-3,-2], bak={}; ks.forEach(i=>bak[k(i)]=logs[k(i)]); const st=cfg.start;
+ const put=(i,w)=>logs[k(i)]={done:{sq:true},workout:w}, wn=()=>document.getElementById('wNote').textContent, F='⚠️ 連續兩週必做 <3 → 砍成 3 件、查睡眠與 CPAP';
+ cfg.start=k(-14); put(-13,'LOW'); put(-11,'UPP'); put(-6,'LOW'); put(-2,'SAT'); // W1：2、W2：2
+ renderToday(); assert(wn().startsWith(F+'\\n'), '前兩個完整週各 2 件 → 觸發，且原本提示保留: '+wn());
+ VD=k(-13); renderToday(); assert(wn().startsWith(F), '檢視過去日期仍以今天為基準'); VD=TD;
+ put(-9,'SAT'); put(-8,'SUN'); delete logs[k(-2)]; // W1：4、W2：1
+ renderToday(); assert(!wn().includes(F), '一週 4 一週 1 → 不觸發');
+ cfg.start=k(-7); put(-6,'LOW'); delete logs[k(-2)]; // 今天在 W2：前一週 W1 是 2 件，再前一週落在 W0
+ renderToday(); assert(!wn().includes(F), '前一週落在 W0 → 不觸發');
+ ks.forEach(i=>{if(bak[k(i)])logs[k(i)]=bak[k(i)];else delete logs[k(i)]}); cfg.start=st;}
 VD=TD;
 // 導引卡：除有氧/休息外每動作都要有卡+至少1支影片
 Object.keys(EX).filter(k=>!['walk','meas'].includes(k)).forEach(k=>{

@@ -198,7 +198,7 @@
         <div class="pct" id="ringPct">0%</div>
       </div>
     </div>
-    <div id="wNote" class="hint"></div>
+    <div id="wNote" class="hint" style="white-space:pre-line"></div>
     <div id="exList"></div>
     <div class="cheer" id="cheer">🎉 今日課表完成！你又比昨天的自己強了一點 💪</div>
     <label class="hint" id="minWrap" style="display:block"><input type="checkbox" id="inMin" onchange="setMin(this.checked)"> 今天只做 10 分鐘最低配（每 7 天限 1 次算出席）<span id="minCnt"></span></label>
@@ -459,9 +459,12 @@ function renderToday(){
     SUN:'有早餐→早餐後出門；沒早餐→起床 1 小時內固定時間出門。戶外、有日光、能講話不能唱歌。回來量腰圍拍照。',
     REST:'早上既有套餐照做（YouTube 那支 8 分鐘＋瑜珈舒緩），不計 KPI。影片到「仰臥起坐」那段改做下面的死蟲式（點 📖 看步驟與教學影片、做該段時間即可）；膝有痛感或睡差那天，跳的動作改踏步。晚上不排。'};
   const lv=logs[VD]||{}, fuse=(lv.s===1||(lv.c&&lv.c<4))&&['LOW','UPP','SAT','SATGYM'].includes(keys[0]);
+  /* 05 連續兩週保險絲：永遠以今天（非 VD）之前的兩個完整週為準，各自 <3 才觸發；較早那週 <W1 就不觸發（本週進行中不看） */
+  const monT=new Date(today);monT.setDate(monT.getDate()-((dow+6)%7));
+  const fuse2=weekOf(new Date(+monT-14*864e5))>=KPI.W_FROM&&[7,14].every(d=>weekDone(new Date(+monT-d*864e5)).n<KPI.FUSE_LT);
   const wn=document.getElementById('wNote');
-  wn.textContent=fuse?'⚠️ 保險絲：前晚睡眠差／CPAP <4h → 今天改保養 15 分（暖身內容×2 組），記「有活動」、不算肌力出席。':(isDeload(vwk)&&keys[0]!=='REST'?'減量週：組數減半、阻力 −20%、RPE ≤6。':NOTE[keys[0]]||'');
-  wn.style.color=fuse?'#ffd166':'';
+  wn.textContent=(fuse2?'⚠️ 連續兩週必做 <3 → 砍成 3 件、查睡眠與 CPAP\n':'')+(fuse?'⚠️ 保險絲：前晚睡眠差／CPAP <4h → 今天改保養 15 分（暖身內容×2 組），記「有活動」、不算肌力出席。':(isDeload(vwk)&&keys[0]!=='REST'?'減量週：組數減半、阻力 −20%、RPE ≤6。':NOTE[keys[0]]||''));
+  wn.style.color=fuse||fuse2?'#ffd166':'';
   const st=(logs[VD]&&logs[VD].done)||{};
   const list=document.getElementById('exList');
   list.innerHTML='';
