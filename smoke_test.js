@@ -75,6 +75,13 @@ assert(rng.map(x=>x[0]).join()==='2026-09-23,2026-09-24,2026-09-26' && rng[1][1]
 assert(logsBetween('2030-01-01','2030-01-02').length===0, 'logsBetween 無資料回空');
 assert(KPI.MUST_TOTAL===24&&KPI.MUST_PASS===20&&KPI.FUSE_LT===3&&KPI.CPAP_MIN===4&&KPI.W_FROM===1&&KPI.W_TO===6, '門檻常數＝定稿：24／≥20／<3／CPAP 4h／W1–W6');
 setMin(false); assert(!logs[VD].min, 'setMin 清除');
+// 02 週曆條只亮必做日：本週（含 TD）塞 REST 日打勾＋LOW 日打勾，只有 LOW 那格含 did
+{const m=new Date(today);m.setDate(m.getDate()-((dow+6)%7));const k=i=>iso(new Date(+m+i*864e5));
+ const bak={};[k(1),k(2)].forEach(d=>bak[d]=logs[d]);
+ logs[k(2)]={done:{db:true},workout:'REST'}; logs[k(1)]={done:{sq:true},workout:'LOW',min:true};
+ renderStrip(); const cells=document.getElementById('wstrip').innerHTML.split('<div ').slice(1);
+ assert(cells.length===7 && cells.filter(c=>c.includes(' did')).length===1 && cells[1].includes(' did') && cells[1].includes('✓ '), '週曆條只有 LOW（最低配）那格亮: '+cells.map(c=>c.includes(' did')?1:0).join(''));
+ [k(1),k(2)].forEach(d=>{if(bak[d])logs[d]=bak[d];else delete logs[d]});}
 VD=TD;
 // 導引卡：除有氧/休息外每動作都要有卡+至少1支影片
 Object.keys(EX).filter(k=>!['walk','meas'].includes(k)).forEach(k=>{

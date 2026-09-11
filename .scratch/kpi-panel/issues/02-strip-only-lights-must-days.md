@@ -6,12 +6,12 @@
 
 **Blocked by:** 01 — 共用 helper 與門檻常數
 
-**Status:** ready-for-agent
+**Status:** resolved
 
-- [ ] renderStrip 的 did 判定改用 01 的「某日是否計入必做」函式，不再是「任何動作有勾」。
-- [ ] REST 日有打勾時，該格不含 did class、不顯示 ✓。
-- [ ] 必做日有打勾時，該格含 did class 並顯示 ✓。
-- [ ] 最低配打勾的必做日照樣亮。
-- [ ] 進度圓環行為不變。
-- [ ] smoke_test.js 新增：塞一週資料含 REST 日打勾與 LOW 日打勾，renderStrip 後 wstrip 的 innerHTML 只有 LOW 那天含 did。
-- [ ] `node smoke_test.js` 全過，現有測試一行不改。
+- [x] renderStrip 的 did 判定改用 01 的「某日是否計入必做」函式，不再是「任何動作有勾」。
+- [x] REST 日有打勾時，該格不含 did class、不顯示 ✓。
+- [x] 必做日有打勾時，該格含 did class 並顯示 ✓。
+- [x] 最低配打勾的必做日照樣亮。
+- [x] 進度圓環行為不變。
+- [x] smoke_test.js 新增：塞一週資料含 REST 日打勾與 LOW 日打勾，renderStrip 後 wstrip 的 innerHTML 只有 LOW 那天含 did。
+- [x] `node smoke_test.js` 全過，現有測試一行不改。

@@ -404,7 +404,7 @@ function renderStrip(){
   let h='';
   for(let i=0;i<7;i++){
     const d=new Date(+mon+i*864e5), k=iso(d), key=dayKeys(weekOf(d),d.getDay())[0];
-    const did=logs[k]&&logs[k].done&&Object.values(logs[k].done).some(Boolean); // 練過的日子蓋勾，一眼看見本週累積
+    const did=mustDone(logs[k]); // 只亮必做日（含最低配）；REST 日打了死蟲式不亮
     h+='<div class="d'+(k===TD?' today':'')+(k===VD&&VD!==TD?' sel':'')+(did?' did':'')+'" onclick="setView(\''+k+'\')">'+DOWCH[d.getDay()]+'<b>'+d.getDate()+'</b><span>'+(did?'✓ ':'')+(TAG[key]||'')+'</span></div>';
   }
   document.getElementById('wstrip').innerHTML=h;
