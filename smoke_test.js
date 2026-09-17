@@ -17,7 +17,8 @@ global.document = {
   querySelectorAll: ()=>[],
   createElement: ()=>fakeEl('ce'+Math.random()),
 };
-global.localStorage = { _d:{}, getItem(k){return this._d[k]||null}, setItem(k,v){this._d[k]=v} };
+// ponytail: 斷言全以 W1＝2026-09-14 寫成；頁面 W1 順延 10-05 後在這裡釘死舊起點（週次是相對運算、起點不影響邏輯），下面另驗頁面預設值
+global.localStorage = { _d:{cfg:'{"start":"2026-09-14","vault":"StanleyInbox","path":"健身日誌/健身紀錄log.md"}',reset20261005:'1'}, getItem(k){return this._d[k]||null}, setItem(k,v){this._d[k]=v} };
 global.navigator = { clipboard:{ writeText:()=>Promise.resolve() } };
 global.location = { href:'', reload(){} };
 global.alert = ()=>{};
@@ -25,6 +26,7 @@ global.alert = ()=>{};
 // ponytail: 釘死 today＝2026-11-04（預設 cfg.start 下 W8 週三 REST），斷言不再隨真實日期漂移；頁面那行改寫時這裡同步改
 const PIN="const today=new Date();";
 let src = fs.readFileSync('index.html','utf-8').match(/<script>([\s\S]*)<\/script>/)[1];
+if(!src.includes("cfg.start='2026-10-05'")||!src.includes('{"start":"2026-10-05"')) throw new Error('頁面 W1 起點應為 2026-10-05');
 if(!src.includes(PIN)) throw new Error('找不到 today 宣告，無法釘死時間');
 src = src.replace(PIN,"const today=new Date('2026-11-04T00:00:00');");
 const tests = `

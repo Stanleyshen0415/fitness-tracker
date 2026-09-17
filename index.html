@@ -251,7 +251,7 @@
     <label>計畫開始日（W1 週一）</label><input type="date" id="inStart" onchange="saveCfg()">
     <label>Obsidian vault 名稱</label><input type="text" id="inVault" onchange="saveCfg()">
     <label>日誌檔路徑</label><input type="text" id="inPath" onchange="saveCfg()">
-    <div class="hint">v2.1 晨練版（2026-09-14 W1）：每週 4 件必做＝二早下肢／四早上肢／六下午長課／日早快走＋量測；一三五早上既有 8 分鐘套餐照舊（不計 KPI）、晚上不排。W1–W8 徒手在家（W1–W6 六週實跑、W7 回顧）、W9（11-14）起週六改喬山 Torus 5。完整計畫在 StanleyBrain repo 家庭/健康/。</div>
+    <div class="hint">v2.1 晨練版（2026-10-05 W1；09-14～10-04 三週暖機：不設目標→早上套餐→早晚各一次）：每週 4 件必做＝二早下肢／四早上肢／六下午長課／日早快走＋量測；一三五早上既有 8 分鐘套餐照舊（不計 KPI）、晚上不排。W1–W8 徒手在家（W1–W6 六週實跑、W7 回顧）、W9（12-05）起週六改喬山 Torus 5。完整計畫在 StanleyBrain repo 家庭/健康/。</div>
   </div>
 </div>
 
@@ -369,9 +369,9 @@ const QUOTES=[
 ];
 /* ── 狀態 ── */
 const LS=localStorage;
-const cfg=JSON.parse(LS.getItem('cfg')||'{"start":"2026-09-14","vault":"StanleyInbox","path":"健身日誌/健身紀錄log.md"}');
+const cfg=JSON.parse(LS.getItem('cfg')||'{"start":"2026-10-05","vault":"StanleyInbox","path":"健身日誌/健身紀錄log.md"}');
 if(cfg.path==='健身日誌.md'){cfg.path='健身日誌/健身紀錄log.md';LS.setItem('cfg',JSON.stringify(cfg));} // vault 已改資料夾結構，自動遷移舊設定
-if(!LS.getItem('reset20260914')){cfg.start='2026-09-14';LS.setItem('cfg',JSON.stringify(cfg));LS.setItem('reset20260914','1');} // 一次性重啟：v2.1 晨練版 W1 週一＝2026-09-14（09-11～13 為 W0 前奏，自動套 W1 課表）
+if(!LS.getItem('reset20261005')){cfg.start='2026-10-05';LS.setItem('cfg',JSON.stringify(cfg));LS.setItem('reset20261005','1');} // 一次性重啟：2026-09-17 Stanley 改三週暖機，W1 週一順延＝2026-10-05（之前全是 W0、不計 KPI）
 const logs=JSON.parse(LS.getItem('logs')||'{}');   // {date:{w,s,wa,n,done,workout,sent}}
 const today=new Date(); today.setHours(0,0,0,0);
 const iso=d=>d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); // 本地時區，避免 UTC 差一天
@@ -665,7 +665,7 @@ function copyCSV(){navigator.clipboard.writeText(csv()).then(()=>{LS.setItem('la
 function renderPlan(){
   const w=+document.getElementById('inWk').value||Math.max(wk,1);
   const sc=schedule(w),names=['日','一','二','三','四','五','六'];
-  let h='<div class="wk">📍 今天＝'+(wk<1?('W0 前奏（W1 '+cfg.start+' 開跑；這幾天早上既有套餐照做、週日量基線）'):('第 '+wk+' 週｜'+PHASE(wk)+(isDeload(wk)?'｜🔋 本週減量':'')))+'——第一頁每天自動跟著這裡的進度出課表</div>';
+  let h='<div class="wk">📍 今天＝'+(wk<1?('W0 前奏（W1 '+cfg.start+' 開跑；暖機期：09-21 週早上 8 分鐘 HIIT＋死蟲式、09-28 週早晚各一次；不計 KPI）'):('第 '+wk+' 週｜'+PHASE(wk)+(isDeload(wk)?'｜🔋 本週減量':'')))+'——第一頁每天自動跟著這裡的進度出課表</div>';
   h+='<div class="wk">第 '+w+' 週｜'+PHASE(w)+(isDeload(w)?'｜🔋 減量週':'')+'</div>';
   [1,2,3,4,5,6,0].forEach(d=>{
     h+='<div class="ex"><div><div class="n">週'+names[d]+'</div><div class="m">'+sc[d].map(k=>W[k].name).join('｜')+'</div><div class="c">'+sc[d].flatMap(k=>W[k].ex).map(i=>EX[i].n).join('、')+'</div></div></div>';});
