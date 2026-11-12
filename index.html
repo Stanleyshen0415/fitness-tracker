@@ -251,7 +251,7 @@
     <label>計畫開始日（W1 週一）</label><input type="date" id="inStart" onchange="saveCfg()">
     <label>Obsidian vault 名稱</label><input type="text" id="inVault" onchange="saveCfg()">
     <label>日誌檔路徑</label><input type="text" id="inPath" onchange="saveCfg()">
-    <div class="hint">v2.1 晨練版（2026-10-05 W1；09-14～10-04 三週暖機：不設目標→早上套餐→早晚各一次）：每週 4 件必做＝二早下肢／四早上肢／六下午長課／日早快走＋量測；一三五早上既有 8 分鐘套餐照舊（不計 KPI）、晚上不排。W1–W8 徒手在家（W1–W6 六週實跑、W7 回顧）、W9（12-05）起週六改喬山 Torus 5。完整計畫在 StanleyBrain repo 家庭/健康/。</div>
+    <div class="hint">🌱 2026-11-13～12-13 恢復期：每天早上間歇套餐＋拉筋、晚上超慢跑 45 分（不計 KPI），12-14 起自動回下面的原課表。<br>v2.1 晨練版（2026-10-05 W1；09-14～10-04 三週暖機：不設目標→早上套餐→早晚各一次）：每週 4 件必做＝二早下肢／四早上肢／六下午長課／日早快走＋量測；一三五早上既有 8 分鐘套餐照舊（不計 KPI）、晚上不排。W1–W8 徒手在家（W1–W6 六週實跑、W7 回顧）、W9（12-05）起週六改喬山 Torus 5。完整計畫在 StanleyBrain repo 家庭/健康/。</div>
   </div>
 </div>
 
@@ -291,6 +291,9 @@ const EX = {
   bpd:{n:'彈力繩跪姿下拉',m:'2–3×10–12｜RPE6–7｜2-1-2｜休75s',c:'手肘往骨盆拉；手掌只是鉤子'},
   walk:{n:'戶外快走（Zone 2）',m:'週日 60 分主課／週六 20 分收尾',c:'能講話但不能唱歌的速度；週日早餐後、有日光'},
   meas:{n:'量測日',m:'腰圍（肚臍水平）＋同角度照片＋看七天均重',c:'看趨勢不看單點'},
+  hiit:{n:'早｜8 分鐘間歇套餐（YouTube 那支）',m:'跟著影片做完一輪',c:'仰臥起坐段換死蟲式；膝有痛感或睡差那天，跳的動作改踏步'},
+  stretch:{n:'早｜拉筋舒緩',m:'接在間歇後、約 10 分',c:'慢慢吐氣、不彈震；腰緊就多停幾個呼吸'},
+  jog:{n:'晚｜超慢跑 45 分',m:'能講話的速度｜小步幅、前腳掌輕落地',c:'喘到講不出話＝太快；時間到就收、不加碼'},
 };
 /* 新手導引卡：s=步驟 e=常見錯誤→修正口令 r=退階/進階 v=教學影片（皆經 oEmbed 查證） */
 const G = {
@@ -328,6 +331,7 @@ const W = {
   SAT:{name:'週六長課｜全身（下午，60–75分）',ex:['bd','er','sq','rdl','ss','ip','br','fp','walk']},
   SATGYM:{name:'週六機器日｜喬山 Torus 5（下午）',ex:['bd','er','cp','lp','rw','lc','rdl','walk']},
   SUN:{name:'週日｜戶外快走＋核心＋量測（早）',ex:['walk','spl','bd','meas']},
+  REC:{name:'恢復期｜早：間歇套餐＋拉筋／晚：超慢跑 45 分（不計 KPI）',ex:['hiit','stretch','jog']},
   REST:{name:'HIIT 套餐日｜跟 YouTube 做，仰臥起坐段換死蟲式（不計 KPI）',ex:['db']},
 };
 /* 週 → 每日課表鍵。dow: 0=日…6=六。W0（開跑前）全休；W1–8 徒手；W9 起週六換喬山 */
@@ -367,6 +371,7 @@ const QUOTES=[
  '你已經比開始前的自己強了，證據就在打勾裡。',
  '呼吸中止的最強處方箋，正在你手上執行。',
 ];
+const NOWT=['walk','meas','hiit','stretch','jog']; // 不記阻力、不掛導引卡的項目
 /* ── 狀態 ── */
 const LS=localStorage;
 const cfg=JSON.parse(LS.getItem('cfg')||'{"start":"2026-10-05","vault":"StanleyInbox","path":"健身日誌/健身紀錄log.md"}');
@@ -385,7 +390,13 @@ const isDeload=w=>w>=13&&(w-13)%4===0; // 前 8 週不減量（紅隊共識）�
 const SLPT={3:'😴 優',2:'🙂 普',1:'😪 差'};
 
 /* ── 今日頁 ── */
-function dayKeys(w,dw){return schedule(w)[dw]}
+/* 恢復期（2026-11-12 Stanley：停練後先找回習慣）：這段日期每天＝REC，不計 KPI；過了 REC.to 自動回 schedule()。要延長／提早結束只改這兩個日期 */
+const REC={from:'2026-11-13',to:'2026-12-13'};
+const inRec=k=>k>=REC.from&&k<=REC.to;
+function dayKeys(w,dw){ // 由（週次, 星期）反推日期，落在恢復期就蓋掉
+  const d=new Date(cfg.start+'T00:00:00');d.setDate(d.getDate()+(w-1)*7+(dw+6)%7);
+  return inRec(iso(d))?['REC']:schedule(w)[dw];
+}
 function streak(){
   let n=0,d=new Date(today);
   const active=k=>{const l=logs[k];return l&&((l.done&&Object.values(l.done).some(Boolean))||l.w)};
@@ -395,19 +406,19 @@ function streak(){
 }
 const DOWCH=['日','一','二','三','四','五','六'];
 /* 視覺資產對映（img/ 由 draw skill 生成） */
-const BANMAP={LOW:'lower',UPP:'upper',SAT:'strength',SATGYM:'strength',SUN:'cardio',REST:'recovery'};
+const BANMAP={LOW:'lower',UPP:'upper',SAT:'strength',SATGYM:'strength',SUN:'cardio',REST:'recovery',REC:'recovery'};
 const ICMAP={sq:'squat',ss:'squat',rdl:'hinge',srdl:'hinge',gb:'bridge',cp:'press',ip:'press',
              bp:'press',br:'row',bpd:'pulldown',
              rw:'row',lp:'pulldown',mc:'core',db:'core',cc:'core',bd:'plank',spl:'plank',
              pp:'antirotation',er:'shoulder',fp:'shoulder',lr:'shoulder',lc:'legcurl',
-             td:'arms',bc:'arms',op:'overhead',walk:'walk',meas:'rest'};
-const TAG={LOW:'下肢',UPP:'上肢',SAT:'長課',SATGYM:'喬山',SUN:'快走',REST:'HIIT'};
+             td:'arms',bc:'arms',op:'overhead',walk:'walk',meas:'rest',hiit:'core',stretch:'rest',jog:'walk'};
+const TAG={LOW:'下肢',UPP:'上肢',SAT:'長課',SATGYM:'喬山',SUN:'快走',REST:'HIIT',REC:'恢復'};
 function renderStrip(){
   const mon=new Date(today);mon.setDate(mon.getDate()-((dow+6)%7));
   let h='';
   for(let i=0;i<7;i++){
     const d=new Date(+mon+i*864e5), k=iso(d), key=dayKeys(weekOf(d),d.getDay())[0];
-    const did=mustDone(logs[k]); // 只亮必做日（含最低配）；REST 日打了死蟲式不亮
+    const l=logs[k], did=mustDone(l)||!!(key==='REC'&&l&&l.done&&Object.values(l.done).some(Boolean)); // 只亮必做日（含最低配）與恢復期有做的日子；REST 日打了死蟲式不亮
     h+='<div class="d'+(k===TD?' today':'')+(k===VD&&VD!==TD?' sel':'')+(did?' did':'')+'" onclick="setView(\''+k+'\')">'+DOWCH[d.getDay()]+'<b>'+d.getDate()+'</b><span>'+(did?'✓ ':'')+(TAG[key]||'')+'</span></div>';
   }
   document.getElementById('wstrip').innerHTML=h;
@@ -447,6 +458,7 @@ function renderToday(){
   document.getElementById('streak').textContent=sk>0?'🔥 連續 '+sk+' 天':'✨ 第 1 天';
   const badges=document.getElementById('phaseBadges');
   if(wk<1){badges.innerHTML='<span class="badge">計畫 '+cfg.start+' 開跑</span>';}
+  else if(inRec(TD))badges.innerHTML='<span class="badge">🌱 恢復期 第 '+(Math.round((today-new Date(REC.from+'T00:00:00'))/864e5)+1)+' 天｜'+REC.to.slice(5)+' 結束</span>';
   else badges.innerHTML='<span class="badge">第 '+wk+' 週｜'+PHASE(wk)+'</span>'+(isDeload(wk)?'<span class="badge deload">🔋 減量週</span>':'');
   renderStrip(); renderStep1();
   const keys=dayKeys(vwk,vdow);
@@ -457,11 +469,12 @@ function renderToday(){
     SAT:'午餐後 2 小時開始。暖身同平日；RDL 全程只在這天做。3 組起手。',
     SATGYM:'午餐後 2 小時。永遠不做直立划船／頸後下拉；繩索對握、肩胛平面；胸推站調整後仍前肩痛→改繩索胸推。第一週磅數保守。',
     SUN:'有早餐→早餐後出門；沒早餐→起床 1 小時內固定時間出門。戶外、有日光、能講話不能唱歌。回來量腰圍拍照。',
+    REC:'恢復期（'+REC.from.slice(5)+'～'+REC.to.slice(5)+'）只有一個目標：把習慣找回來。早上＝原本那套 8 分鐘間歇＋拉筋舒緩；晚上＝超慢跑 45 分。不計 KPI、做了哪項就勾哪項。恢復期結束隔天自動回到原課表。',
     REST:'早上既有套餐照做（YouTube 那支 8 分鐘＋瑜珈舒緩），不計 KPI。影片到「仰臥起坐」那段改做下面的死蟲式（點 📖 看步驟與教學影片、做該段時間即可）；膝有痛感或睡差那天，跳的動作改踏步。晚上不排。\n🍽️ 飲食：照舊一天一餐、只吃晚餐；晚餐蛋白質抓約 110g，吃不到就白天補乳清 1 匙。'};
   const lv=logs[VD]||{}, fuse=(lv.s===1||(lv.c&&lv.c<KPI.CPAP_MIN))&&['LOW','UPP','SAT','SATGYM'].includes(keys[0]);
   /* 05 連續兩週保險絲：永遠以今天（非 VD）之前的兩個完整週為準，各自 <3 才觸發；較早那週 <W1 就不觸發（本週進行中不看） */
   const monT=new Date(today);monT.setDate(monT.getDate()-((dow+6)%7));
-  const fuse2=weekOf(new Date(+monT-14*864e5))>=KPI.W_FROM&&[7,14].every(d=>weekDone(new Date(+monT-d*864e5)).n<KPI.FUSE_LT);
+  const fuse2=(TD<REC.from||iso(new Date(+monT-14*864e5))>REC.to)&&weekOf(new Date(+monT-14*864e5))>=KPI.W_FROM&&[7,14].every(d=>weekDone(new Date(+monT-d*864e5)).n<KPI.FUSE_LT);
   const wn=document.getElementById('wNote');
   wn.textContent=(fuse2?'⚠️ 連續兩週必做 <'+KPI.FUSE_LT+' → 砍成 '+KPI.FUSE_LT+' 件、查睡眠與 CPAP\n':'')+(fuse?'⚠️ 保險絲：前晚睡眠差／CPAP <'+KPI.CPAP_MIN+'h → 今天改保養 15 分（暖身內容×2 組），記「有活動」、不算肌力出席。':(isDeload(vwk)&&keys[0]!=='REST'?'減量週：組數減半、阻力 −20%、RPE ≤6。':NOTE[keys[0]]||''));
   wn.style.color=fuse||fuse2?'#ffd166':'';
@@ -474,7 +487,7 @@ function renderToday(){
     const div=document.createElement('div');div.className='ex'+(d?' done':'');
     /* 漸進超負荷：記本次阻力/重量，placeholder 帶出最近一次的值 */
     let wtH='';
-    if(!['walk','meas'].includes(id)){
+    if(!NOWT.includes(id)){
       const cur=(logs[VD]&&logs[VD].wt&&logs[VD].wt[id])||'', last=lastWt(id);
       wtH='<input class="wt" value="'+esc(cur)+'" placeholder="'+esc(last?'上次：'+last:'阻力/重量')+'"'+(fut?' disabled':'')+' onchange="setWt(\''+id+'\',this.value)">';
     }
@@ -664,11 +677,11 @@ function copyCSV(){navigator.clipboard.writeText(csv()).then(()=>{LS.setItem('la
 /* ── 課表頁 / 設定 ── */
 function renderPlan(){
   const w=+document.getElementById('inWk').value||Math.max(wk,1);
-  const sc=schedule(w),names=['日','一','二','三','四','五','六'];
+  const names=['日','一','二','三','四','五','六'];
   let h='<div class="wk">📍 今天＝'+(wk<1?('W0 前奏（W1 '+cfg.start+' 開跑；暖機期：09-21 週早上 8 分鐘 HIIT＋死蟲式、09-28 週早晚各一次；不計 KPI）'):('第 '+wk+' 週｜'+PHASE(wk)+(isDeload(wk)?'｜🔋 本週減量':'')))+'——第一頁每天自動跟著這裡的進度出課表</div>';
   h+='<div class="wk">第 '+w+' 週｜'+PHASE(w)+(isDeload(w)?'｜🔋 減量週':'')+'</div>';
   [1,2,3,4,5,6,0].forEach(d=>{
-    h+='<div class="ex"><div><div class="n">週'+names[d]+'</div><div class="m">'+sc[d].map(k=>W[k].name).join('｜')+'</div><div class="c">'+sc[d].flatMap(k=>W[k].ex).map(i=>EX[i].n).join('、')+'</div></div></div>';});
+    h+='<div class="ex"><div><div class="n">週'+names[d]+'</div><div class="m">'+dayKeys(w,d).map(k=>W[k].name).join('｜')+'</div><div class="c">'+dayKeys(w,d).flatMap(k=>W[k].ex).map(i=>EX[i].n).join('、')+'</div></div></div>';});
   document.getElementById('planView').innerHTML=h;
 }
 function saveCfg(){

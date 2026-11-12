@@ -35,7 +35,10 @@ const A = (w,d)=>dayKeys(w,d).join('+');
 assert(A(0,2)==='REST' && A(0,4)==='REST' && A(0,6)==='REST' && A(0,0)==='SUN', 'W0 前奏：全休、週日量基線');
 assert(A(1,2)==='LOW' && A(1,4)==='UPP' && A(1,6)==='SAT' && A(1,0)==='SUN', 'W1 直接上肌力：二下肢／四上肢／六長課／日快走');
 assert(A(1,1)==='REST' && A(1,3)==='REST' && A(1,5)==='REST', '一三五 REST（既有 HIIT 套餐、不計 KPI）');
-assert(A(8,6)==='SAT' && A(9,6)==='SATGYM', 'W9 起週六換喬山');
+assert(schedule(8)[6][0]==='SAT' && schedule(9)[6][0]==='SATGYM', 'W9 起週六換喬山');
+// 恢復期 2026-11-13～12-13（cfg.start=09-14 下：11-12＝W9 四、11-13＝W9 五、12-13＝W13 日、12-14＝W14 一）
+assert(A(9,4)==='UPP' && A(9,5)==='REC' && A(9,6)==='REC' && A(13,0)==='REC' && A(14,1)==='REST' && A(14,2)==='LOW', '恢復期邊界：前一天／後一天回原課表');
+assert(W.REC.ex.join()==='hiit,stretch,jog' && !MUST.includes('REC'), '恢復期＝早間歇＋拉筋、晚超慢跑；不計 KPI');
 assert(W.REST.ex.join()==='db' && G.db && G.db.v.length===2, 'HIIT 套餐日只掛死蟲式卡（替代仰臥起坐、含教學影片）');
 assert(W.LOW.ex.slice(0,2).join()==='bd,er' && W.UPP.ex.slice(0,2).join()==='bd,er', '肌力日前兩項＝暖身');
 assert(!isDeload(4)&&!isDeload(8)&&!isDeload(9)&&isDeload(13)&&isDeload(17), '前 8 週不減量、W13 起每 4 週');
@@ -127,8 +130,18 @@ setMin(false); assert(!logs[VD].min, 'setMin 清除');
  renderToday(); assert(!wn().includes(F), '前一週落在 W0 → 不觸發');
  ds.forEach(d=>delete logs[d]); cfg.start=st;}
 VD=TD;
+// 06 恢復期畫面：把 W1 挪到 2026-10-26 → today（11-04）所在週一 11-02＝W2；改用恢復期窗口蓋住今天來驗
+{const f=REC.from,t2=REC.to; REC.from='2026-11-03'; REC.to='2026-11-30';
+ logs['2026-11-03']={done:{jog:true},workout:'REC'}; renderStrip();
+ const cells=document.getElementById('wstrip').innerHTML.split('<div ').slice(1);
+ assert(cells[0].includes('HIIT')&&!cells[0].includes(' did')&&cells[1].includes(' did')&&cells[1].includes('恢復')&&cells[6].includes('恢復'), '恢復期週曆條：窗口前照舊、有做的那天亮');
+ assert(mustDone(logs['2026-11-03'])===false, '恢復期打勾不進必做帳');
+ delete logs['2026-11-03']; renderToday();
+ assert(document.getElementById('wName').textContent.startsWith('恢復期') && !document.getElementById('wNote').textContent.includes('連續兩週'), '恢復期今日頁：出恢復課表、不跳連續兩週保險絲: '+document.getElementById('wNote').textContent);
+ assert(document.getElementById('phaseBadges').innerHTML.includes('恢復期 第 2 天'), '恢復期徽章天數: '+document.getElementById('phaseBadges').innerHTML);
+ REC.from=f; REC.to=t2;}
 // 導引卡：除有氧/休息外每動作都要有卡+至少1支影片
-Object.keys(EX).filter(k=>!['walk','meas'].includes(k)).forEach(k=>{
+Object.keys(EX).filter(k=>!NOWT.includes(k)).forEach(k=>{
   assert(G[k]&&G[k].s&&G[k].e&&G[k].r, '缺導引卡: '+k);
   assert(G[k].v.length>=1&&G[k].v.every(x=>x[1].startsWith('https://www.youtube.com/')), '導引卡影片異常: '+k);
 });
